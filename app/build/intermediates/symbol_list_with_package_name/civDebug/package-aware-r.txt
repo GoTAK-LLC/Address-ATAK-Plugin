@@ -276,6 +276,7 @@ string addToolbarItem
 string addXRoute
 string add_view
 string add_view_desc
+string address_plugin_preferences
 string alt_buttons
 string app_desc
 string app_name

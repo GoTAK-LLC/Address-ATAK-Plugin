@@ -37,6 +37,7 @@ public class SelfLocationWidget extends AbstractWidgetMapComponent
     // Preference keys
     public static final String PREF_SHOW_SELF_ADDRESS = "address_show_self_location";
     public static final String PREF_REFRESH_PERIOD = "address_refresh_period";
+    public static final String PREF_PHOTON_FALLBACK = "address_photon_fallback";
     
     // Cache keys for persisting address across restarts
     private static final String CACHE_LAST_ADDRESS = "address_cache_last_address";
@@ -46,6 +47,7 @@ public class SelfLocationWidget extends AbstractWidgetMapComponent
     // Default values
     private static final boolean DEFAULT_SHOW_SELF_ADDRESS = true;
     private static final int DEFAULT_REFRESH_PERIOD_SECONDS = 5;
+    private static final boolean DEFAULT_PHOTON_FALLBACK = false; // Off by default for privacy
     
     // Widget positioning - matches callsign area style
     private static final int FONT_SIZE = 2;
@@ -175,6 +177,10 @@ public class SelfLocationWidget extends AbstractWidgetMapComponent
         return prefs.getBoolean(PREF_SHOW_SELF_ADDRESS, DEFAULT_SHOW_SELF_ADDRESS);
     }
     
+    private boolean isPhotonFallbackEnabled() {
+        return prefs.getBoolean(PREF_PHOTON_FALLBACK, DEFAULT_PHOTON_FALLBACK);
+    }
+    
     private int getRefreshPeriodSeconds() {
         try {
             String value = prefs.getString(PREF_REFRESH_PERIOD, String.valueOf(DEFAULT_REFRESH_PERIOD_SECONDS));
@@ -212,6 +218,12 @@ public class SelfLocationWidget extends AbstractWidgetMapComponent
     private void performGeocoding() {
         if (mapView == null) return;
         
+        // Don't perform any lookups if geocoding is disabled
+        if (!isGeocodingEnabled()) {
+            Log.d(TAG, "Geocoding disabled, skipping lookup");
+            return;
+        }
+        
         // Get self marker position
         PointMapItem selfMarker = mapView.getSelfMarker();
         if (selfMarker == null) {
@@ -236,11 +248,17 @@ public class SelfLocationWidget extends AbstractWidgetMapComponent
         // Try ATAK's GeocodeManager first (better accuracy with house numbers)
         String formattedAddress = tryAtakGeocoder(point);
         
-        // Fallback to Photon API if ATAK geocoder fails
+        // Fallback to Photon API if ATAK geocoder fails (only if enabled for privacy)
         if (formattedAddress == null) {
-            Log.d(TAG, "ATAK geocoder failed, falling back to Photon API");
-            tryPhotonGeocoder(point);
-            return; // Photon is async, will update widget when done
+            if (isPhotonFallbackEnabled()) {
+                Log.d(TAG, "ATAK geocoder failed, falling back to Photon API");
+                tryPhotonGeocoder(point);
+                return; // Photon is async, will update widget when done
+            } else {
+                Log.d(TAG, "ATAK geocoder failed, Photon fallback disabled for privacy");
+                // Keep showing last known address
+                return;
+            }
         }
         
         // ATAK geocoder succeeded

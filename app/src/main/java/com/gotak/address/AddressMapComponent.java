@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.atakmap.android.dropdown.DropDownMapComponent;
-import com.atakmap.android.preference.ToolsPreferenceFragment;
+import com.atakmap.app.preferences.ToolsPreferenceFragment;
 import com.gotak.address.plugin.R;
 import com.gotak.address.search.AddressSearchDropDown;
 import com.gotak.address.search.SearchButtonWidget;

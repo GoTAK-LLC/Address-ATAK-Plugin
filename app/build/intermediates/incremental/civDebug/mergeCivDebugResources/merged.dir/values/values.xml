@@ -417,6 +417,7 @@
     <string name="addXRoute">Add a route to the map</string>
     <string name="add_view">Add View</string>
     <string name="add_view_desc">Adds a NavStackItem to the current NavStack</string>
+    <string name="address_plugin_preferences">Address Settings</string>
     <string name="alt_buttons">Alternate</string>
     <string name="app_desc">Address search plugin with Nominatim geocoding</string>
     <string name="app_name">Address</string>
@@ -540,7 +541,7 @@
     <string name="tap_to_speak_mgrs_loc">Tap to state the Coordinates and Marker Type</string>
     <string name="toolbar_buttons">ToolbarButtons</string>
     <string name="toolbar_handled">Toolbar title and button styling is handled by the NavigationStackView</string>
-    <string name="versionName" translatable="false">1.0.1 (5df569a4) - [5.2.0]</string>
+    <string name="versionName" translatable="false">1.0.1 (0eaef97b) - [5.2.0]</string>
     <string name="videoLauncher">Example of how to display a video with an overlay layer</string>
     <string name="webView">Demonstrate how to launch a plugin with a web view.</string>
     <style name="ATAKEditText" parent="@android:style/Widget.EditText">

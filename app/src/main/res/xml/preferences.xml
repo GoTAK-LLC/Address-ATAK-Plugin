@@ -21,6 +21,13 @@
         android:dialogTitle="Refresh Period"
         android:dependency="address_show_self_location" />
 
+    <com.atakmap.android.gui.PanCheckBoxPreference
+        android:key="address_photon_fallback"
+        android:title="Enable Photon API Fallback"
+        android:summary="Use external Photon API when ATAK geocoder fails (sends location to photon.komoot.io)"
+        android:defaultValue="false"
+        android:dependency="address_show_self_location" />
+
     <!-- Search Settings -->
     <PreferenceCategory
         android:key="category_search"
