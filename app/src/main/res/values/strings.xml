@@ -5,6 +5,8 @@
     <string name="hello_world">Address</string>
     <!-- description -->
     <string name="app_desc">Address search plugin with Nominatim geocoding</string>
+    <!-- Preferences -->
+    <string name="address_plugin_preferences">Address Settings</string>
     <!-- Button Descriptions-->
     <string name="largerButton">Keo Enlarge and move the dropdown</string>
     <string name="smallerButton">Enlarge and move the dropdown</string>

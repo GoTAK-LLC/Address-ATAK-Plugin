@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.atakmap.android.dropdown.DropDownMapComponent;
+import com.atakmap.android.preference.ToolsPreferenceFragment;
 import com.gotak.address.plugin.R;
 import com.gotak.address.search.AddressSearchDropDown;
 import com.gotak.address.search.SearchButtonWidget;
@@ -39,6 +40,15 @@ public class AddressMapComponent extends DropDownMapComponent {
         super.onCreate(context, intent, view);
         pluginContext = context;
 
+        // Register preferences in ATAK settings menu
+        ToolsPreferenceFragment.register(
+                new ToolsPreferenceFragment.ToolPreference(
+                        context.getString(R.string.address_plugin_preferences),
+                        "Address geocoding and search settings",
+                        "addressPreferences",
+                        context.getResources().getDrawable(R.drawable.ic_launcher, null),
+                        new AddressPreferenceFragment(context)));
+
         // Initialize Address Search components
         try {
             Log.d(TAG, "Initializing address search components");
@@ -69,6 +79,9 @@ public class AddressMapComponent extends DropDownMapComponent {
     @Override
     protected void onDestroyImpl(Context context, MapView view) {
         Log.d(TAG, "calling on destroy");
+        
+        // Unregister preferences
+        ToolsPreferenceFragment.unregister("addressPreferences");
         
         // Clean up address search components
         try {

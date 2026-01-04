@@ -47,10 +47,10 @@ public class SelfLocationWidget extends AbstractWidgetMapComponent
     private static final boolean DEFAULT_SHOW_SELF_ADDRESS = true;
     private static final int DEFAULT_REFRESH_PERIOD_SECONDS = 5;
     
-    // Widget positioning
+    // Widget positioning - matches callsign area style
     private static final int FONT_SIZE = 2;
-    private static final float HORIZONTAL_MARGIN = 12f;
-    private static final float VERTICAL_MARGIN = 8f;
+    private static final float HORIZONTAL_MARGIN = 16f;
+    private static final float VERTICAL_MARGIN = 4f;
     
     // Colors (ARGB format)
     private static final int COLOR_CYAN = 0xFF00FFFF;
@@ -94,19 +94,23 @@ public class SelfLocationWidget extends AbstractWidgetMapComponent
         // Load cached address from previous session
         loadCachedAddress();
         
-        // Create widget in bottom right corner (above callsign area)
+        // Create widget in bottom right corner, directly above the callsign
         RootLayoutWidget root = (RootLayoutWidget) mapView.getComponentExtra("rootLayoutWidget");
         if (root != null) {
-            layout = (LinearLayoutWidget) root.getLayout(RootLayoutWidget.BOTTOM_RIGHT)
-                    .getOrCreateLayout("SelfAddress_H");
+            // Get the BOTTOM_RIGHT layout directly (where callsign lives)
+            layout = root.getLayout(RootLayoutWidget.BOTTOM_RIGHT);
             
             addressWidget = new TextWidget("", FONT_SIZE);
             addressWidget.setName("SelfAddressWidget");
+            // Right margin to align with callsign, minimal vertical margins
             addressWidget.setMargins(0f, VERTICAL_MARGIN, HORIZONTAL_MARGIN, VERTICAL_MARGIN);
             addressWidget.addOnClickListener(this);
             addressWidget.setVisible(false);
             
-            layout.addChildWidgetAt(0, addressWidget);
+            // Add at the end of the layout (just above where callsign appears)
+            // Using a high index ensures it's near the bottom of the stack
+            int childCount = layout.getChildCount();
+            layout.addChildWidgetAt(Math.max(0, childCount), addressWidget);
         }
         
         // Start geocoding if enabled
