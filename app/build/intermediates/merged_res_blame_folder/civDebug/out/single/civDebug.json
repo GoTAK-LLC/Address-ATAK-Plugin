@@ -1,5 +1,9 @@
 [
     {
+        "merged": "com.gotak.address.plugin.app-merged_res-9:/layout_offline_state_item.xml.flat",
+        "source": "com.gotak.address.plugin.app-main-12:/layout/offline_state_item.xml"
+    },
+    {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/layout_address_search_result_item.xml.flat",
         "source": "com.gotak.address.plugin.app-main-12:/layout/address_search_result_item.xml"
     },
@@ -106,6 +110,10 @@
     {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_dot_selected.xml.flat",
         "source": "com.gotak.address.plugin.app-main-12:/drawable/dot_selected.xml"
+    },
+    {
+        "merged": "com.gotak.address.plugin.app-merged_res-9:/layout_offline_data_manager.xml.flat",
+        "source": "com.gotak.address.plugin.app-main-12:/layout/offline_data_manager.xml"
     },
     {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_ic_location_map.xml.flat",

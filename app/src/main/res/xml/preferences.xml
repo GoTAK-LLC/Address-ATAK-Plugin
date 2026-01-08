@@ -28,6 +28,24 @@
         android:defaultValue="false"
         android:dependency="address_show_self_location" />
 
+    <!-- Map Center Crosshairs Geocoding -->
+    <PreferenceCategory
+        android:key="category_map_center"
+        android:title="Map Center Crosshairs" />
+
+    <com.atakmap.android.gui.PanCheckBoxPreference
+        android:key="address_show_map_center"
+        android:title="Show Crosshairs Address"
+        android:summary="Display geocoded address for the map center crosshairs (requires ATAK's 'Designate Map Centre' to be enabled)"
+        android:defaultValue="true" />
+
+    <com.atakmap.android.gui.PanCheckBoxPreference
+        android:key="address_map_center_photon_fallback"
+        android:title="Enable Photon API Fallback"
+        android:summary="Use external Photon API when ATAK geocoder fails for crosshairs"
+        android:defaultValue="false"
+        android:dependency="address_show_map_center" />
+
     <!-- Search Settings -->
     <PreferenceCategory
         android:key="category_search"
@@ -43,6 +61,22 @@
         android:key="address_clear_history"
         android:title="Clear Search History"
         android:summary="Remove all saved search history" />
+
+    <!-- Offline Data -->
+    <PreferenceCategory
+        android:key="category_offline"
+        android:title="Offline Data" />
+
+    <com.atakmap.android.gui.PanPreference
+        android:key="address_manage_offline"
+        android:title="Manage Offline Data"
+        android:summary="Download state address databases for offline search" />
+
+    <com.atakmap.android.gui.PanCheckBoxPreference
+        android:key="address_offline_only"
+        android:title="Offline Mode"
+        android:summary="Only use downloaded databases (no network requests)"
+        android:defaultValue="false" />
 
     <!-- About -->
     <PreferenceCategory

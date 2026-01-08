@@ -444,6 +444,7 @@
     <string name="drawShapes">Draw a shape on the map</string>
     <string name="dropRoute">Drop a new route on the map without displaying the option dialog</string>
     <string name="drop_marker">Drop Marker</string>
+    <string name="drop_marker_button_desc">Drop a marker at this location</string>
     <string name="dropdownBtn">Show a sample dropdown view</string>
     <string name="emergency">Create an emergency 911 alert</string>
     <string name="example_footer">Footer Example</string>
@@ -482,7 +483,7 @@
     <string name="marker_type">Marker Type</string>
     <string name="mgrs">MGRS Coordinates</string>
     <string name="modify_buttons">Update the toolbar buttons based on a mode flag</string>
-    <string name="navigate_button_desc">Navigate in Google Maps</string>
+    <string name="navigate_button_desc">Navigate with Bloodhound</string>
     <string name="no_emergency">Remove the emergency 911 alert</string>
     <string name="no_mobile_imagery_found">No mobile imagery found. Make sure you\'re switched to the "Mobile" tab.</string>
     <string name="no_results">No results found</string>
@@ -541,7 +542,7 @@
     <string name="tap_to_speak_mgrs_loc">Tap to state the Coordinates and Marker Type</string>
     <string name="toolbar_buttons">ToolbarButtons</string>
     <string name="toolbar_handled">Toolbar title and button styling is handled by the NavigationStackView</string>
-    <string name="versionName" translatable="false">1.0.4 (d6b0f7c3) - [5.2.0]</string>
+    <string name="versionName" translatable="false">1.0.4 (90bc4e7d) - [5.2.0]</string>
     <string name="videoLauncher">Example of how to display a video with an overlay layer</string>
     <string name="webView">Demonstrate how to launch a plugin with a web view.</string>
     <style name="ATAKEditText" parent="@android:style/Widget.EditText">

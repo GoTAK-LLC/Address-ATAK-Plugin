@@ -1,16 +1,16 @@
 -- Merging decision tree log ---
 meta-data#plugin-api
-INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:41:9-81
+INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:48:9-81
 	android:value
 		INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:41:46-79
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:48:46-79
 	android:name
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:41:20-45
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:48:20-45
 manifest
-ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-66:12
-INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-66:12
-INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-66:12
-INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-66:12
+ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-73:12
+INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-73:12
+INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-73:12
+INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-73:12
 MERGED from [com.github.mik3y:usb-serial-for-android:3.8.1] C:\Users\matth\.gradle\caches\transforms-3\e1585ca972515c0436d11f8d325044b5\transformed\usb-serial-for-android-3.8.1\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.recyclerview:recyclerview:1.2.1] C:\Users\matth\.gradle\caches\transforms-3\65e6df9c7e971430eaf3030db12b9fce\transformed\recyclerview-1.2.1\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.cardview:cardview:1.0.0] C:\Users\matth\.gradle\caches\transforms-3\1de04a675efb66b8f92158eed1a2fc6a\transformed\cardview-1.0.0\AndroidManifest.xml:17:1-22:12
@@ -18,22 +18,22 @@ MERGED from [androidx.customview:customview:1.0.0] C:\Users\matth\.gradle\caches
 MERGED from [androidx.core:core:1.3.2] C:\Users\matth\.gradle\caches\transforms-3\190c3da32d57ab355901ea7ea2912c2c\transformed\core-1.3.2\AndroidManifest.xml:17:1-26:12
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\matth\.gradle\caches\transforms-3\7ab80c67053d36ed63659ff120b047e2\transformed\versionedparcelable-1.1.0\AndroidManifest.xml:17:1-27:12
 MERGED from [androidx.lifecycle:lifecycle-runtime:2.0.0] C:\Users\matth\.gradle\caches\transforms-3\2e9df1c1e3acc1d50c593bb065e9f885\transformed\lifecycle-runtime-2.0.0\AndroidManifest.xml:17:1-22:12
-INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-66:12
-INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-66:12
-INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-66:12
+INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-73:12
+INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-73:12
+INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-73:12
 	package
 		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:3:5-39
 		INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml
 		INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml
 	android:versionName
 		INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-66:12
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-73:12
 		INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml
 	xmlns:tools
 		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:2:5-51
 	android:versionCode
 		INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-66:12
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:1-73:12
 		INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml
 	xmlns:android
 		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:1:11-69
@@ -111,60 +111,74 @@ uses-permission#android.permission.INTERNET
 ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:32:5-67
 	android:name
 		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:32:22-64
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:35:5-36:38
+	android:maxSdkVersion
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:36:9-35
+	android:name
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:35:22-77
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:37:5-39:40
+	android:maxSdkVersion
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:38:9-35
+	tools:ignore
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:39:9-37
+	android:name
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:37:22-78
 application
-ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:34:5-64:19
+ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:41:5-71:19
 MERGED from [androidx.core:core:1.3.2] C:\Users\matth\.gradle\caches\transforms-3\190c3da32d57ab355901ea7ea2912c2c\transformed\core-1.3.2\AndroidManifest.xml:24:5-89
 MERGED from [androidx.core:core:1.3.2] C:\Users\matth\.gradle\caches\transforms-3\190c3da32d57ab355901ea7ea2912c2c\transformed\core-1.3.2\AndroidManifest.xml:24:5-89
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\matth\.gradle\caches\transforms-3\7ab80c67053d36ed63659ff120b047e2\transformed\versionedparcelable-1.1.0\AndroidManifest.xml:24:5-25:19
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.0] C:\Users\matth\.gradle\caches\transforms-3\7ab80c67053d36ed63659ff120b047e2\transformed\versionedparcelable-1.1.0\AndroidManifest.xml:24:5-25:19
 	android:extractNativeLibs
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:39:9-41
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:46:9-41
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.3.2] C:\Users\matth\.gradle\caches\transforms-3\190c3da32d57ab355901ea7ea2912c2c\transformed\core-1.3.2\AndroidManifest.xml:24:18-86
 	android:label
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:37:9-41
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:44:9-41
 	android:icon
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:36:9-45
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:43:9-45
 	android:allowBackup
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:35:9-36
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:42:9-36
 	android:description
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:38:9-47
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:45:9-47
 	android:theme
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:40:9-40
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:47:9-40
 meta-data#app_desc
-ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:42:9-78
+ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:49:9-78
 	android:value
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:42:44-76
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:49:44-76
 	android:name
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:42:20-43
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:49:20-43
 activity#com.atakmap.app.component
-ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:48:8-56:19
+ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:55:8-63:19
 	android:exported
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:49:12-35
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:56:12-35
 	tools:ignore
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:51:12-39
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:58:12-39
 	android:icon
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:50:12-48
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:57:12-48
 	android:name
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:48:18-58
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:55:18-58
 intent-filter#action:name:com.atakmap.app.component
-ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:52:12-55:28
+ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:59:12-62:28
 	android:label
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:52:27-59
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:59:27-59
 	android:icon
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:53:27-63
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:60:27-63
 action#com.atakmap.app.component
-ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:54:15-66
+ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:61:15-66
 	android:name
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:54:23-63
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:61:23-63
 activity#com.gotak.address.PluginPermissionActivity
-ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:60:8-62:74
+ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:67:8-69:74
 	android:exported
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:61:12-35
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:68:12-35
 	android:theme
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:62:12-71
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:69:12-71
 	android:name
-		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:60:18-75
+		ADDED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:67:18-75
 uses-sdk
 INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml

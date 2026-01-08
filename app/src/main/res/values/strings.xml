@@ -472,7 +472,8 @@
     <string name="section_recent">Recent</string>
     <string name="clear_all">Clear All</string>
     <string name="remove_history_item_desc">Remove from history</string>
-    <string name="navigate_button_desc">Navigate in Google Maps</string>
+    <string name="navigate_button_desc">Navigate with Bloodhound</string>
+    <string name="drop_marker_button_desc">Drop a marker at this location</string>
     <string name="searching">Searching...</string>
     <string name="no_results">No results found</string>
     <string name="search_error">Search error</string>

@@ -1,8 +1,8 @@
 1<?xml version="1.0" encoding="utf-8"?>
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
 3    package="com.gotak.address.plugin"
-4    android:versionCode="1767520601"
-5    android:versionName="1.0.4 (d6b0f7c3) - [5.2.0]" >
+4    android:versionCode="1767527189"
+5    android:versionName="1.0.4 (90bc4e7d) - [5.2.0]" >
 6
 7    <uses-sdk
 8        android:minSdkVersion="21"
@@ -85,72 +85,86 @@
 50-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:32:5-67
 50-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:32:22-64
 51
-52    <application
-52-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:34:5-64:19
-53        android:allowBackup="false"
-53-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:35:9-36
-54        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-54-->[androidx.core:core:1.3.2] C:\Users\matth\.gradle\caches\transforms-3\190c3da32d57ab355901ea7ea2912c2c\transformed\core-1.3.2\AndroidManifest.xml:24:18-86
-55        android:debuggable="true"
-56        android:description="@string/app_desc"
-56-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:38:9-47
-57        android:extractNativeLibs="true"
-57-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:39:9-41
-58        android:icon="@drawable/ic_launcher"
-58-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:36:9-45
-59        android:label="@string/app_name"
-59-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:37:9-41
-60        android:theme="@style/AppTheme" >
-60-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:40:9-40
-61        <meta-data
-62            android:name="plugin-api"
-62-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:41:20-45
-63            android:value="com.atakmap.app@5.2.0.CIV" />
-63-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:41:46-79
-64        <meta-data
-64-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:42:9-78
-65            android:name="app_desc"
-65-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:42:20-43
-66            android:value="@string/app_desc" />
-66-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:42:44-76
-67
-68        <!--
-69            This fictitious activity entry allow for ATAK 4.6.0.2 and newer to perform 
-70            plugin discovery  android devices.  If this is removed, the plugin will 
-71            not be able to be discovered or loaded.
-72        -->
-73        <activity
-73-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:48:8-56:19
-74            android:name="com.atakmap.app.component"
-74-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:48:18-58
-75            android:exported="true"
-75-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:49:12-35
-76            android:icon="@drawable/ic_launcher" >
-76-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:50:12-48
-77            <intent-filter
-77-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:52:12-55:28
-78                android:icon="@drawable/ic_launcher"
-78-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:53:27-63
-79                android:label="@string/app_name" >
-79-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:52:27-59
-80                <action android:name="com.atakmap.app.component" />
-80-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:54:15-66
-80-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:54:23-63
-81            </intent-filter>
-82        </activity>
-83
-84        <!--
-85            Permission request activity for Android 13+ 
-86            Must be exported=true since ATAK (different UID) launches this activity
-87        -->
-88        <activity
-88-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:60:8-62:74
-89            android:name="com.gotak.address.PluginPermissionActivity"
-89-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:60:18-75
-90            android:exported="true"
-90-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:61:12-35
-91            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-91-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:62:12-71
-92    </application>
-93
-94</manifest>
+52    <!-- Storage permissions for importing offline address databases -->
+53    <uses-permission
+53-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:35:5-36:38
+54        android:name="android.permission.READ_EXTERNAL_STORAGE"
+54-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:35:22-77
+55        android:maxSdkVersion="32" />
+55-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:36:9-35
+56    <uses-permission
+56-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:37:5-39:40
+57        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+57-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:37:22-78
+58        android:maxSdkVersion="29" />
+58-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:38:9-35
+59
+60    <application
+60-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:41:5-71:19
+61        android:allowBackup="false"
+61-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:42:9-36
+62        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+62-->[androidx.core:core:1.3.2] C:\Users\matth\.gradle\caches\transforms-3\190c3da32d57ab355901ea7ea2912c2c\transformed\core-1.3.2\AndroidManifest.xml:24:18-86
+63        android:debuggable="true"
+64        android:description="@string/app_desc"
+64-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:45:9-47
+65        android:extractNativeLibs="true"
+65-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:46:9-41
+66        android:icon="@drawable/ic_launcher"
+66-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:43:9-45
+67        android:label="@string/app_name"
+67-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:44:9-41
+68        android:theme="@style/AppTheme" >
+68-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:47:9-40
+69        <meta-data
+70            android:name="plugin-api"
+70-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:48:20-45
+71            android:value="com.atakmap.app@5.2.0.CIV" />
+71-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:48:46-79
+72        <meta-data
+72-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:49:9-78
+73            android:name="app_desc"
+73-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:49:20-43
+74            android:value="@string/app_desc" />
+74-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:49:44-76
+75
+76        <!--
+77            This fictitious activity entry allow for ATAK 4.6.0.2 and newer to perform 
+78            plugin discovery  android devices.  If this is removed, the plugin will 
+79            not be able to be discovered or loaded.
+80        -->
+81        <activity
+81-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:55:8-63:19
+82            android:name="com.atakmap.app.component"
+82-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:55:18-58
+83            android:exported="true"
+83-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:56:12-35
+84            android:icon="@drawable/ic_launcher" >
+84-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:57:12-48
+85            <intent-filter
+85-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:59:12-62:28
+86                android:icon="@drawable/ic_launcher"
+86-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:60:27-63
+87                android:label="@string/app_name" >
+87-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:59:27-59
+88                <action android:name="com.atakmap.app.component" />
+88-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:61:15-66
+88-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:61:23-63
+89            </intent-filter>
+90        </activity>
+91
+92        <!--
+93            Permission request activity for Android 13+ 
+94            Must be exported=true since ATAK (different UID) launches this activity
+95        -->
+96        <activity
+96-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:67:8-69:74
+97            android:name="com.gotak.address.PluginPermissionActivity"
+97-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:67:18-75
+98            android:exported="true"
+98-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:68:12-35
+99            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+99-->C:\Users\matth\Development\ATAK-Plugins\ATAK-CIV-5.4.0.24-SDK\plugins\Address-ATAK-Plugin\app\src\main\AndroidManifest.xml:69:12-71
+100    </application>
+101
+102</manifest>

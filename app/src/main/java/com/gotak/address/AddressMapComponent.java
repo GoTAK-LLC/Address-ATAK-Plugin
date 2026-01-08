@@ -8,6 +8,7 @@ import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.app.preferences.ToolsPreferenceFragment;
 import com.gotak.address.plugin.R;
 import com.gotak.address.search.AddressSearchDropDown;
+import com.gotak.address.search.OfflineDataDropDown;
 import com.gotak.address.search.SearchButtonWidget;
 import com.atakmap.android.ipc.AtakBroadcast.DocumentedIntentFilter;
 import com.atakmap.android.maps.MapView;
@@ -27,8 +28,14 @@ public class AddressMapComponent extends DropDownMapComponent {
     private SearchButtonWidget searchButtonWidget;
     private AddressSearchDropDown addressSearchDropDown;
     
+    // Offline data manager dropdown
+    private OfflineDataDropDown offlineDataDropDown;
+    
     // Self location geocoding widget
     private com.gotak.address.selfgeo.SelfLocationWidget selfLocationWidget;
+    
+    // Map center crosshairs geocoding widget
+    private com.gotak.address.selfgeo.MapCenterWidget mapCenterWidget;
 
     @Override
     public void onCreate(final Context context, Intent intent,
@@ -62,6 +69,15 @@ public class AddressMapComponent extends DropDownMapComponent {
                     "Hide the address search panel");
             this.registerDropDownReceiver(addressSearchDropDown, searchFilter);
             
+            // Create and register the offline data dropdown receiver
+            offlineDataDropDown = new OfflineDataDropDown(view, pluginContext);
+            DocumentedIntentFilter offlineFilter = new DocumentedIntentFilter();
+            offlineFilter.addAction(OfflineDataDropDown.SHOW_OFFLINE_DATA,
+                    "Show the offline data manager");
+            offlineFilter.addAction(OfflineDataDropDown.HIDE_OFFLINE_DATA,
+                    "Hide the offline data manager");
+            this.registerDropDownReceiver(offlineDataDropDown, offlineFilter);
+            
             // Create the search button widget
             searchButtonWidget = new SearchButtonWidget();
             searchButtonWidget.onCreate(context, intent, view);
@@ -69,6 +85,10 @@ public class AddressMapComponent extends DropDownMapComponent {
             // Create the self location widget (shows address above callsign)
             selfLocationWidget = new com.gotak.address.selfgeo.SelfLocationWidget();
             selfLocationWidget.onCreate(pluginContext, intent, view);
+            
+            // Create the map center widget (shows address for crosshairs)
+            mapCenterWidget = new com.gotak.address.selfgeo.MapCenterWidget();
+            mapCenterWidget.onCreate(pluginContext, intent, view);
             
             Log.d(TAG, "Address search components initialized");
         } catch (Exception e) {
@@ -93,9 +113,17 @@ public class AddressMapComponent extends DropDownMapComponent {
                 addressSearchDropDown.dispose();
                 addressSearchDropDown = null;
             }
+            if (offlineDataDropDown != null) {
+                offlineDataDropDown.dispose();
+                offlineDataDropDown = null;
+            }
             if (selfLocationWidget != null) {
                 selfLocationWidget.dispose();
                 selfLocationWidget = null;
+            }
+            if (mapCenterWidget != null) {
+                mapCenterWidget.dispose();
+                mapCenterWidget = null;
             }
         } catch (Exception e) {
             Log.e(TAG, "Error cleaning up address search components: " + e.getMessage(), e);

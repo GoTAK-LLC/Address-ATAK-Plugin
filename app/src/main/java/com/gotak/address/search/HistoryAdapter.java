@@ -32,6 +32,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         void onHistoryItemClick(NominatimSearchResult result);
         void onHistoryItemRemove(NominatimSearchResult result);
         void onHistoryItemNavigate(NominatimSearchResult result);
+        void onHistoryItemDropMarker(NominatimSearchResult result);
     }
 
     public HistoryAdapter(Context context, HistoryItemListener listener) {
@@ -85,6 +86,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         private final ImageView iconView;
         private final TextView nameText;
         private final TextView addressText;
+        private final ImageButton dropMarkerButton;
         private final ImageButton navigateButton;
         private final ImageButton removeButton;
 
@@ -94,6 +96,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
             iconView = itemView.findViewById(R.id.history_icon);
             nameText = itemView.findViewById(R.id.history_name);
             addressText = itemView.findViewById(R.id.history_address);
+            dropMarkerButton = itemView.findViewById(R.id.history_drop_marker);
             navigateButton = itemView.findViewById(R.id.history_navigate);
             removeButton = itemView.findViewById(R.id.history_remove);
         }
@@ -109,6 +112,12 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
             clickableArea.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onHistoryItemClick(item);
+                }
+            });
+
+            dropMarkerButton.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onHistoryItemDropMarker(item);
                 }
             });
 

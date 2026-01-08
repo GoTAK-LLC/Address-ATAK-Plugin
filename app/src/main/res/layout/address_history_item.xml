@@ -60,6 +60,16 @@
 
     </LinearLayout>
 
+    <!-- Drop marker button -->
+    <ImageButton
+        android:id="@+id/history_drop_marker"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_location_pin"
+        android:contentDescription="@string/drop_marker_button_desc"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:padding="6dp" />
+
     <!-- Navigate in Google Maps button -->
     <ImageButton
         android:id="@+id/history_navigate"

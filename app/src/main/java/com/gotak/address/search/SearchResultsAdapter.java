@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -29,6 +30,8 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
      */
     public interface OnResultClickListener {
         void onResultClick(NominatimSearchResult result);
+        void onResultDropMarker(NominatimSearchResult result);
+        void onResultNavigate(NominatimSearchResult result);
     }
 
     public SearchResultsAdapter(Context context, OnResultClickListener listener) {
@@ -78,15 +81,21 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
      * ViewHolder for search result items.
      */
     static class ViewHolder extends RecyclerView.ViewHolder {
+        private final View clickableArea;
         private final ImageView iconView;
         private final TextView nameText;
         private final TextView addressText;
+        private final ImageButton dropMarkerButton;
+        private final ImageButton navigateButton;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
+            clickableArea = itemView.findViewById(R.id.result_item_clickable);
             iconView = itemView.findViewById(R.id.result_icon);
             nameText = itemView.findViewById(R.id.result_name);
             addressText = itemView.findViewById(R.id.result_address);
+            dropMarkerButton = itemView.findViewById(R.id.result_drop_marker);
+            navigateButton = itemView.findViewById(R.id.result_navigate);
         }
 
         void bind(NominatimSearchResult result, OnResultClickListener listener) {
@@ -97,9 +106,21 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
             LocationType locationType = LocationType.fromResult(result);
             iconView.setImageResource(locationType.getIconRes());
 
-            itemView.setOnClickListener(v -> {
+            clickableArea.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onResultClick(result);
+                }
+            });
+
+            dropMarkerButton.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onResultDropMarker(result);
+                }
+            });
+
+            navigateButton.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onResultNavigate(result);
                 }
             });
         }

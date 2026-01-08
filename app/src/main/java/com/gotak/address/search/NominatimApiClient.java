@@ -1,5 +1,8 @@
 package com.gotak.address.search;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -23,8 +26,10 @@ import java.util.concurrent.Executors;
 /**
  * HTTP client for geocoding APIs with fuzzy search support.
  * 
- * Primary: Photon API (https://photon.komoot.io/) - Built on OSM data with typo tolerance
- * Fallback: Nominatim API (https://nominatim.openstreetmap.org/) - Standard OSM geocoder
+ * Search priority:
+ * 1. Offline databases (if downloaded) - instant results, works without internet
+ * 2. Photon API (https://photon.komoot.io/) - Built on OSM data with typo tolerance
+ * 3. Nominatim API (https://nominatim.openstreetmap.org/) - Standard OSM geocoder
  * 
  * Photon provides fuzzy matching so "ontigol" will find "Ontigola", etc.
  * No API key required for either service.
@@ -45,10 +50,57 @@ public class NominatimApiClient {
 
     private final ExecutorService executor;
     private final Handler mainHandler;
+    
+    // Offline database support
+    private Context context;
+    private OfflineAddressDatabase offlineDatabase;
+    private boolean offlineOnly = false;
 
     public NominatimApiClient() {
         this.executor = Executors.newSingleThreadExecutor();
         this.mainHandler = new Handler(Looper.getMainLooper());
+    }
+    
+    /**
+     * Initialize with context for offline database support.
+     */
+    public NominatimApiClient(Context context) {
+        this();
+        this.context = context;
+        this.offlineDatabase = new OfflineAddressDatabase(context);
+    }
+    
+    /**
+     * Set whether to use offline-only mode (no network requests).
+     */
+    public void setOfflineOnly(boolean offlineOnly) {
+        this.offlineOnly = offlineOnly;
+    }
+    
+    /**
+     * Get the offline database instance.
+     */
+    public OfflineAddressDatabase getOfflineDatabase() {
+        return offlineDatabase;
+    }
+    
+    /**
+     * Check if device has network connectivity.
+     */
+    private boolean isNetworkAvailable() {
+        if (context == null) return true; // Assume available if no context
+        
+        try {
+            ConnectivityManager cm = (ConnectivityManager) 
+                    context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm != null) {
+                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                return activeNetwork != null && activeNetwork.isConnected();
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Error checking network: " + e.getMessage());
+        }
+        return true; // Assume available on error
     }
 
     /**
@@ -62,31 +114,90 @@ public class NominatimApiClient {
     /**
      * Search for places matching the query with fuzzy matching.
      * Runs on a background thread and returns results via callback on the main thread.
+     * 
+     * Search priority:
+     * 1. Offline databases (instant, works without internet)
+     * 2. Online APIs (Photon, then Nominatim as fallback)
      */
     public void search(String query, SearchCallback callback) {
         executor.execute(() -> {
+            List<NominatimSearchResult> results = new ArrayList<>();
+            
+            // Step 1: Try offline database first (instant results)
+            if (offlineDatabase != null && !offlineDatabase.getDownloadedStates().isEmpty()) {
+                try {
+                    Log.d(TAG, "Searching offline databases...");
+                    results = offlineDatabase.searchAllStates(query);
+                    Log.i(TAG, "Offline search found " + results.size() + " results");
+                    
+                    // If offline-only mode or we have good results, return them
+                    if (offlineOnly || results.size() >= DEFAULT_LIMIT) {
+                        final List<NominatimSearchResult> finalResults = results;
+                        mainHandler.post(() -> callback.onSuccess(finalResults));
+                        return;
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, "Offline search error: " + e.getMessage());
+                }
+            }
+            
+            // Step 2: If offline-only mode, return what we have
+            if (offlineOnly) {
+                final List<NominatimSearchResult> finalResults = results;
+                mainHandler.post(() -> callback.onSuccess(finalResults));
+                return;
+            }
+            
+            // Step 3: Check network availability
+            if (!isNetworkAvailable()) {
+                Log.w(TAG, "No network available, returning offline results only");
+                final List<NominatimSearchResult> finalResults = results;
+                if (results.isEmpty()) {
+                    mainHandler.post(() -> callback.onError("No network connection and no offline data"));
+                } else {
+                    mainHandler.post(() -> callback.onSuccess(finalResults));
+                }
+                return;
+            }
+            
+            // Step 4: Try online APIs
             try {
                 // Try Photon first (better fuzzy matching)
-                List<NominatimSearchResult> results = performPhotonSearch(query);
+                List<NominatimSearchResult> onlineResults = performPhotonSearch(query);
                 
                 // If Photon returns no results, try Nominatim as fallback
-                if (results.isEmpty()) {
+                if (onlineResults.isEmpty()) {
                     Log.d(TAG, "Photon returned no results, trying Nominatim fallback");
-                    results = performNominatimSearch(query);
+                    onlineResults = performNominatimSearch(query);
+                }
+                
+                // Merge with offline results (prefer online for fresher data)
+                if (!onlineResults.isEmpty()) {
+                    results = onlineResults;
                 }
                 
                 final List<NominatimSearchResult> finalResults = results;
                 mainHandler.post(() -> callback.onSuccess(finalResults));
             } catch (Exception e) {
-                Log.e(TAG, "Search error: " + e.getMessage(), e);
+                Log.e(TAG, "Online search error: " + e.getMessage(), e);
+                
                 // Try Nominatim as fallback on any error
                 try {
-                    List<NominatimSearchResult> results = performNominatimSearch(query);
+                    List<NominatimSearchResult> nominatimResults = performNominatimSearch(query);
+                    if (!nominatimResults.isEmpty()) {
+                        results = nominatimResults;
+                    }
                     final List<NominatimSearchResult> finalResults = results;
                     mainHandler.post(() -> callback.onSuccess(finalResults));
                 } catch (Exception e2) {
                     Log.e(TAG, "Fallback search also failed: " + e2.getMessage(), e2);
-                    mainHandler.post(() -> callback.onError(e.getMessage()));
+                    // Return offline results if we have any
+                    if (!results.isEmpty()) {
+                        final List<NominatimSearchResult> finalResults = results;
+                        mainHandler.post(() -> callback.onSuccess(finalResults));
+                    } else {
+                        mainHandler.post(() -> callback.onError(e.getMessage()));
+                    }
                 }
             }
         });
@@ -296,10 +407,13 @@ public class NominatimApiClient {
     }
 
     /**
-     * Shutdown the executor service.
+     * Shutdown the executor service and close offline database.
      */
     public void shutdown() {
         executor.shutdown();
+        if (offlineDatabase != null) {
+            offlineDatabase.close();
+        }
     }
 }
 

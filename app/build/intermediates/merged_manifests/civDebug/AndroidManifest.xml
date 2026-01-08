@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.gotak.address.plugin"
-    android:versionCode="1767520601"
-    android:versionName="1.0.4 (d6b0f7c3) - [5.2.0]" >
+    android:versionCode="1767527189"
+    android:versionName="1.0.4 (90bc4e7d) - [5.2.0]" >
 
     <uses-sdk
         android:minSdkVersion="21"
@@ -48,6 +48,14 @@
 
     <!-- Internet permission for Nominatim geocoding API -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Storage permissions for importing offline address databases -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
 
     <application
         android:allowBackup="false"

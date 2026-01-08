@@ -1,18 +1,21 @@
 package com.gotak.address.search;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -21,14 +24,24 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.atakmap.android.bloodhound.BloodHoundTool;
 import com.atakmap.android.dropdown.DropDown;
 import com.atakmap.android.dropdown.DropDownReceiver;
+import com.atakmap.android.ipc.AtakBroadcast;
+import com.atakmap.android.maps.MapGroup;
+import com.atakmap.android.maps.Marker;
 import com.gotak.address.plugin.R;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
 import com.atakmap.coremap.maps.coords.GeoPoint;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
+
 import java.util.List;
+import java.util.UUID;
 
 /**
  * DropDown receiver for the address search panel.
@@ -66,6 +79,9 @@ public class AddressSearchDropDown extends DropDownReceiver implements
     private RecyclerView historyRecyclerView;
     private HistoryAdapter historyAdapter;
     private TextView clearHistoryButton;
+    
+    // Offline data button
+    private Button offlineDataButton;
 
     // Debounce handling
     private final Runnable searchRunnable;
@@ -74,7 +90,7 @@ public class AddressSearchDropDown extends DropDownReceiver implements
     public AddressSearchDropDown(MapView mapView, Context pluginContext) {
         super(mapView);
         this.pluginContext = pluginContext;
-        this.apiClient = new NominatimApiClient();
+        this.apiClient = new NominatimApiClient(pluginContext); // Use context for offline DB
         this.mainHandler = new Handler(Looper.getMainLooper());
         this.historyManager = new SearchHistoryManager(pluginContext);
 
@@ -131,6 +147,15 @@ public class AddressSearchDropDown extends DropDownReceiver implements
             historyAdapter = new HistoryAdapter(pluginContext, this);
             historyRecyclerView.setLayoutManager(new LinearLayoutManager(pluginContext));
             historyRecyclerView.setAdapter(historyAdapter);
+            
+            // Setup offline data button
+            offlineDataButton = rootView.findViewById(R.id.offline_data_button);
+            offlineDataButton.setOnClickListener(v -> {
+                // Close this dropdown and open offline data manager
+                closeDropDown();
+                Intent offlineIntent = new Intent(OfflineDataDropDown.SHOW_OFFLINE_DATA);
+                AtakBroadcast.getInstance().sendBroadcast(offlineIntent);
+            });
 
             // Setup search input
             setupSearchInput();
@@ -343,30 +368,273 @@ public class AddressSearchDropDown extends DropDownReceiver implements
 
     @Override
     public void onHistoryItemNavigate(NominatimSearchResult result) {
-        Log.i(TAG, "Opening Google Maps for: " + result.getDisplayName());
+        startBloodhoundNavigation(result);
+    }
+
+    @Override
+    public void onHistoryItemDropMarker(NominatimSearchResult result) {
+        dropMarkerAtLocation(result);
+    }
+
+    @Override
+    public void onResultDropMarker(NominatimSearchResult result) {
+        dropMarkerAtLocation(result);
+        // Add to history when a marker is dropped
+        historyManager.addToHistory(result);
+    }
+
+    @Override
+    public void onResultNavigate(NominatimSearchResult result) {
+        startBloodhoundNavigation(result);
+        // Add to history when navigating
+        historyManager.addToHistory(result);
+    }
+
+    /**
+     * Start Bloodhound navigation to the given location.
+     * This drops a marker at the location and activates the Bloodhound tool.
+     */
+    private void startBloodhoundNavigation(NominatimSearchResult result) {
+        Log.i(TAG, "Starting Bloodhound navigation to: " + result.getName());
         
-        // Create Google Maps navigation intent using address
-        // Format: google.navigation:q=address
-        String encodedAddress = Uri.encode(result.getDisplayName());
-        String uri = "google.navigation:q=" + encodedAddress;
+        // Create GeoPoint from result
+        GeoPoint point = new GeoPoint(result.getLatitude(), result.getLongitude());
         
-        Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-        mapIntent.setPackage("com.google.android.apps.maps");
-        mapIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        // Generate unique ID for the navigation marker
+        String uid = "address-nav-" + UUID.randomUUID().toString().substring(0, 8);
         
-        try {
-            pluginContext.startActivity(mapIntent);
-        } catch (Exception e) {
-            // Google Maps not installed, try generic geo intent with address
-            Log.w(TAG, "Google Maps not available, trying generic geo intent");
-            String geoUri = "geo:0,0?q=" + encodedAddress;
-            Intent geoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(geoUri));
-            geoIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            try {
-                pluginContext.startActivity(geoIntent);
-            } catch (Exception e2) {
-                Log.e(TAG, "No map application available", e2);
+        // Create the marker
+        Marker marker = new Marker(point, uid);
+        marker.setType("b-m-p-w-GOTO");  // GOTO waypoint type (common for navigation targets)
+        
+        // Set title from location name
+        String title = result.getName();
+        marker.setTitle(title);
+        
+        // Set full address as remarks
+        marker.setMetaString("remarks", result.getDisplayName());
+        
+        // Make it persistent
+        marker.setMetaBoolean("readiness", true);
+        marker.setMetaBoolean("archive", true);
+        marker.setMetaString("how", "h-g-i-g-o");
+        
+        // Add to the map
+        MapGroup rootGroup = getMapView().getRootGroup();
+        if (rootGroup != null) {
+            MapGroup userObjects = rootGroup.findMapGroup("User Objects");
+            if (userObjects == null) {
+                userObjects = rootGroup.addGroup("User Objects");
             }
+            userObjects.addItem(marker);
+            Log.d(TAG, "Navigation marker dropped: " + title);
+            
+            // Navigate to the marker location on map
+            navigateToResult(result);
+            
+            // Start Bloodhound navigation to the marker
+            Intent bloodhoundIntent = new Intent();
+            bloodhoundIntent.setAction(BloodHoundTool.BLOOD_HOUND);
+            bloodhoundIntent.putExtra("uid", uid);
+            AtakBroadcast.getInstance().sendBroadcast(bloodhoundIntent);
+            Log.d(TAG, "Bloodhound started for: " + uid);
+        } else {
+            Log.e(TAG, "Could not find root map group");
+        }
+    }
+
+    /**
+     * Marker type options with CoT type codes and MIL-STD-2525 colors/shapes.
+     * Shape types: 0=rectangle (friendly), 1=diamond (hostile), 2=square (neutral), 3=circle (unknown)
+     */
+    private static class MarkerType {
+        final String name;
+        final String cotType;
+        final int color;
+        final int shapeType; // 0=rect, 1=diamond, 2=square, 3=circle
+        
+        MarkerType(String name, String cotType, int color, int shapeType) {
+            this.name = name;
+            this.cotType = cotType;
+            this.color = color;
+            this.shapeType = shapeType;
+        }
+    }
+    
+    // MIL-STD-2525 standard colors
+    private static final int COLOR_FRIENDLY = Color.rgb(128, 224, 255);  // Light blue
+    private static final int COLOR_HOSTILE = Color.rgb(255, 128, 128);   // Light red/salmon
+    private static final int COLOR_NEUTRAL = Color.rgb(170, 255, 170);   // Light green
+    private static final int COLOR_UNKNOWN = Color.rgb(255, 255, 128);   // Light yellow
+    
+    private static final MarkerType[] MARKER_TYPES = {
+        new MarkerType("Friendly", "a-f-G", COLOR_FRIENDLY, 0),
+        new MarkerType("Hostile", "a-h-G", COLOR_HOSTILE, 1),
+        new MarkerType("Neutral", "a-n-G", COLOR_NEUTRAL, 2),
+        new MarkerType("Unknown", "a-u-G", COLOR_UNKNOWN, 3),
+    };
+    
+    /**
+     * Create a MIL-STD-2525 style marker icon bitmap.
+     */
+    private Bitmap createMarkerIcon(int color, int shapeType, int size) {
+        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        
+        Paint fillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        fillPaint.setColor(color);
+        fillPaint.setStyle(Paint.Style.FILL);
+        
+        Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        strokePaint.setColor(Color.BLACK);
+        strokePaint.setStyle(Paint.Style.STROKE);
+        strokePaint.setStrokeWidth(3);
+        
+        int padding = 4;
+        int w = size - padding * 2;
+        int h = size - padding * 2;
+        int cx = size / 2;
+        int cy = size / 2;
+        
+        switch (shapeType) {
+            case 0: // Friendly - Rectangle (rounded corners)
+                canvas.drawRoundRect(padding, padding + h/6, size - padding, size - padding - h/6, 8, 8, fillPaint);
+                canvas.drawRoundRect(padding, padding + h/6, size - padding, size - padding - h/6, 8, 8, strokePaint);
+                break;
+                
+            case 1: // Hostile - Diamond
+                Path diamond = new Path();
+                diamond.moveTo(cx, padding);
+                diamond.lineTo(size - padding, cy);
+                diamond.lineTo(cx, size - padding);
+                diamond.lineTo(padding, cy);
+                diamond.close();
+                canvas.drawPath(diamond, fillPaint);
+                canvas.drawPath(diamond, strokePaint);
+                break;
+                
+            case 2: // Neutral - Square
+                canvas.drawRect(padding, padding, size - padding, size - padding, fillPaint);
+                canvas.drawRect(padding, padding, size - padding, size - padding, strokePaint);
+                break;
+                
+                case 3: // Unknown - Quatrefoil (4-leaf clover)
+                float radius = w / 4.5f;
+                // Draw 4 circles to form quatrefoil
+                canvas.drawCircle(cx, cy - radius, radius, fillPaint);  // Top
+                canvas.drawCircle(cx, cy + radius, radius, fillPaint);  // Bottom
+                canvas.drawCircle(cx - radius, cy, radius, fillPaint);  // Left
+                canvas.drawCircle(cx + radius, cy, radius, fillPaint);  // Right
+                // Draw strokes
+                canvas.drawCircle(cx, cy - radius, radius, strokePaint);
+                canvas.drawCircle(cx, cy + radius, radius, strokePaint);
+                canvas.drawCircle(cx - radius, cy, radius, strokePaint);
+                canvas.drawCircle(cx + radius, cy, radius, strokePaint);
+                break;
+        }
+        
+        return bitmap;
+    }
+    
+    /**
+     * Show compact dialog to select marker type with MIL-STD-2525 style icons in a row.
+     */
+    private void dropMarkerAtLocation(NominatimSearchResult result) {
+        Log.i(TAG, "Showing marker type dialog for: " + result.getName());
+        
+        // Build the dialog with marker type options
+        AlertDialog.Builder builder = new AlertDialog.Builder(getMapView().getContext());
+        builder.setTitle("Marker Type");
+        
+        // Create a horizontal row of icons
+        LinearLayout layout = new LinearLayout(getMapView().getContext());
+        layout.setOrientation(LinearLayout.HORIZONTAL);
+        layout.setGravity(Gravity.CENTER);
+        layout.setPadding(16, 16, 16, 16);
+        
+        final AlertDialog[] dialogHolder = new AlertDialog[1];
+        
+        int iconSize = 56;
+        
+        for (MarkerType markerType : MARKER_TYPES) {
+            // Create the MIL-STD-2525 style icon
+            Bitmap iconBitmap = createMarkerIcon(markerType.color, markerType.shapeType, iconSize);
+            
+            // Create ImageView for the marker icon
+            android.widget.ImageView iconView = new android.widget.ImageView(getMapView().getContext());
+            iconView.setImageBitmap(iconBitmap);
+            iconView.setClickable(true);
+            iconView.setFocusable(true);
+            iconView.setBackgroundResource(android.R.drawable.list_selector_background);
+            iconView.setPadding(12, 12, 12, 12);
+            
+            LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(iconSize + 24, iconSize + 24);
+            iconParams.setMargins(8, 0, 8, 0);
+            iconView.setLayoutParams(iconParams);
+            
+            // Handle icon click
+            final String cotType = markerType.cotType;
+            iconView.setOnClickListener(v -> {
+                if (dialogHolder[0] != null) {
+                    dialogHolder[0].dismiss();
+                }
+                createMarkerWithType(result, cotType);
+            });
+            
+            layout.addView(iconView);
+        }
+        
+        builder.setView(layout);
+        builder.setNegativeButton("Cancel", null);
+        
+        AlertDialog dialog = builder.create();
+        dialogHolder[0] = dialog;
+        dialog.show();
+    }
+    
+    /**
+     * Create and place the marker with the specified CoT type.
+     */
+    private void createMarkerWithType(NominatimSearchResult result, String cotType) {
+        Log.i(TAG, "Dropping marker at: " + result.getName() + " with type: " + cotType);
+        
+        // Create GeoPoint from result
+        GeoPoint point = new GeoPoint(result.getLatitude(), result.getLongitude());
+        
+        // Generate unique ID for this marker
+        String uid = "address-marker-" + UUID.randomUUID().toString().substring(0, 8);
+        
+        // Create the marker
+        Marker marker = new Marker(point, uid);
+        marker.setType(cotType);
+        
+        // Set title from location name
+        String title = result.getName();
+        marker.setTitle(title);
+        
+        // Set full address as remarks
+        marker.setMetaString("remarks", result.getDisplayName());
+        
+        // Make it persistent and show callsign
+        marker.setMetaBoolean("readiness", true);
+        marker.setMetaBoolean("archive", true);
+        marker.setMetaString("how", "h-g-i-g-o"); // Human, ground, individual, gps, other
+        
+        // Add to the map
+        MapGroup rootGroup = getMapView().getRootGroup();
+        if (rootGroup != null) {
+            MapGroup userObjects = rootGroup.findMapGroup("User Objects");
+            if (userObjects == null) {
+                // Create User Objects group if it doesn't exist
+                userObjects = rootGroup.addGroup("User Objects");
+            }
+            userObjects.addItem(marker);
+            Log.d(TAG, "Marker dropped: " + title + " (" + cotType + ")");
+            
+            // Navigate to the marker location
+            navigateToResult(result);
+        } else {
+            Log.e(TAG, "Could not find root map group");
         }
     }
 

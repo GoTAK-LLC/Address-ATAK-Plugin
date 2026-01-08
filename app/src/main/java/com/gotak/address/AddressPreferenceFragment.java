@@ -2,12 +2,15 @@ package com.gotak.address;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.atakmap.android.gui.PanPreference;
+import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.preference.PluginPreferenceFragment;
 import com.gotak.address.plugin.R;
+import com.gotak.address.search.OfflineDataDropDown;
 import com.gotak.address.search.SearchHistoryManager;
 
 /**
@@ -46,6 +49,17 @@ public class AddressPreferenceFragment extends PluginPreferenceFragment {
                     android.widget.Toast.makeText(ctx, "Search history cleared", 
                             android.widget.Toast.LENGTH_SHORT).show();
                 }
+                return true;
+            });
+        }
+        
+        // Set up manage offline data button
+        PanPreference offlineDataPref = (PanPreference) findPreference("address_manage_offline");
+        if (offlineDataPref != null) {
+            offlineDataPref.setOnPreferenceClickListener(preference -> {
+                // Open the offline data manager dropdown
+                Intent intent = new Intent(OfflineDataDropDown.SHOW_OFFLINE_DATA);
+                AtakBroadcast.getInstance().sendBroadcast(intent);
                 return true;
             });
         }
