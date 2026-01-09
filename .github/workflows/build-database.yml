@@ -13,6 +13,9 @@ on:
         default: 'true'
         type: string
 
+permissions:
+  contents: write  # Required to create releases and upload assets
+
 jobs:
   build:
     runs-on: ubuntu-latest
