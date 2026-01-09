@@ -8,7 +8,7 @@
   <a href="https://getgotak.com/activate">
     <img src="https://img.shields.io/badge/Download-Get%20Plugin-blue?style=for-the-badge" alt="Download">
   </a>
-  <a href="https://github.com/GoTAK-LLC/Address-ATAK-Plugin-/releases/tag/databases">
+  <a href="https://github.com/GoTAK-LLC/Address-ATAK-Plugin/releases/tag/databases">
     <img src="https://img.shields.io/badge/Offline_Data-Download-green?style=for-the-badge" alt="Offline Data">
   </a>
 </p>
@@ -85,7 +85,7 @@ Download pre-built databases for offline operation—no internet required after 
 ### Download Pre-Built Databases
 
 Ready-to-use databases are available at:
-**[📦 Download Databases](https://github.com/GoTAK-LLC/Address-ATAK-Plugin-/releases/tag/databases)**
+**[📦 Download Databases](https://github.com/GoTAK-LLC/Address-ATAK-Plugin/releases/tag/databases)**
 
 Or download directly from within the plugin:
 1. Open Address Plugin → **Offline Data**
@@ -96,7 +96,7 @@ Or download directly from within the plugin:
 
 Anyone can request a database build via GitHub Issues:
 
-1. Go to [Create New Issue](https://github.com/GoTAK-LLC/Address-ATAK-Plugin-/issues/new/choose)
+1. Go to [Create New Issue](https://github.com/GoTAK-LLC/Address-ATAK-Plugin/issues/new/choose)
 2. Select **"🗺️ Request Database Build"**
 3. Set the title to `Build: your-region` (e.g., `Build: europe/france`)
 4. Submit—the build starts automatically!

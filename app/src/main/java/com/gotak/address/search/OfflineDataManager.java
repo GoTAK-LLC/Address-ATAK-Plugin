@@ -34,7 +34,7 @@ public class OfflineDataManager {
     
     // GitHub repository hosting the address databases
     // Downloads from GitHub Releases (supports large files)
-    private static final String GITHUB_REPO = "GoTAK-LLC/Address-ATAK-Plugin-";
+    private static final String GITHUB_REPO = "GoTAK-LLC/Address-ATAK-Plugin";
     private static final String RELEASE_TAG = "databases";
     private static final String BASE_URL = "https://github.com/" + GITHUB_REPO + "/releases/download/" + RELEASE_TAG + "/";
     private static final String MANIFEST_URL = BASE_URL + "manifest.json";
