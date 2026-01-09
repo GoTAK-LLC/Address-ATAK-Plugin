@@ -757,7 +757,7 @@ def build_manifest(output_dir):
         "version": "2.0",
         "schema_version": 2,
         "poi_categories": list(POI_CATEGORIES.keys()),
-        "regions": []
+        "states": []
     }
     
     for db_path in sorted(databases):
@@ -788,7 +788,7 @@ def build_manifest(output_dir):
         
         conn.close()
         
-        manifest["regions"].append({
+        manifest["states"].append({
             "id": db_path.stem,
             "name": region,
             "size": db_path.stat().st_size,
