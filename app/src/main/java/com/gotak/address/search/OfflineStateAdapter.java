@@ -96,17 +96,9 @@ public class OfflineStateAdapter extends RecyclerView.Adapter<OfflineStateAdapte
         }
 
         void bind(OfflineDataManager.StateInfo state) {
-            // Show full name only (no abbreviation clutter)
+            // Show full name only - never show abbreviation
             stateName.setText(state.name);
-            
-            // Only show abbreviation if it's meaningful (not empty, not same as name)
-            if (state.abbrev != null && !state.abbrev.isEmpty() && 
-                !state.abbrev.equalsIgnoreCase(state.name)) {
-                stateAbbrev.setText("(" + state.abbrev + ")");
-                stateAbbrev.setVisibility(View.VISIBLE);
-            } else {
-                stateAbbrev.setVisibility(View.GONE);
-            }
+            stateAbbrev.setVisibility(View.GONE);
             
             // Show size and place count
             StringBuilder info = new StringBuilder();

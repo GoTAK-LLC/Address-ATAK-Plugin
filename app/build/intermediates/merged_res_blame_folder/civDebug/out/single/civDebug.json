@@ -140,6 +140,10 @@
         "source": "com.gotak.address.plugin.app-main-12:/drawable-xhdpi/rv_vertical.png"
     },
     {
+        "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_bg_button_download.xml.flat",
+        "source": "com.gotak.address.plugin.app-main-12:/drawable/bg_button_download.xml"
+    },
+    {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_ic_poi_embassy.xml.flat",
         "source": "com.gotak.address.plugin.app-main-12:/drawable/ic_poi_embassy.xml"
     },
@@ -210,6 +214,10 @@
     {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_ic_poi_airport.xml.flat",
         "source": "com.gotak.address.plugin.app-main-12:/drawable/ic_poi_airport.xml"
+    },
+    {
+        "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_bg_button_delete.xml.flat",
+        "source": "com.gotak.address.plugin.app-main-12:/drawable/bg_button_delete.xml"
     },
     {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_ic_poi_surveillance.xml.flat",

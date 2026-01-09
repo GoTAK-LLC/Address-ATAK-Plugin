@@ -626,7 +626,7 @@
     <string name="toolbar_buttons">ToolbarButtons</string>
     <string name="toolbar_handled">Toolbar title and button styling is handled by the NavigationStackView</string>
     <string name="unable_to_determine_location">Unable to determine your location</string>
-    <string name="versionName" translatable="false">1.0.4 (ee3d42a7) - [5.2.0]</string>
+    <string name="versionName" translatable="false">1.0.4 (bee0f3c2) - [5.2.0]</string>
     <string name="videoLauncher">Example of how to display a video with an overlay layer</string>
     <string name="webView">Demonstrate how to launch a plugin with a web view.</string>
     <style name="ATAKEditText" parent="@android:style/Widget.EditText">

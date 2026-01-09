@@ -144,30 +144,67 @@ public class OfflineDataDropDown extends DropDownReceiver implements
     }
 
     private void loadAvailableStates() {
-        showLoading("Loading available states...");
+        showLoading("Loading available regions...");
         errorText.setVisibility(View.GONE);
 
         dataManager.fetchAvailableStates(new OfflineDataManager.ManifestCallback() {
             @Override
             public void onSuccess(List<OfflineDataManager.StateInfo> states) {
                 hideLoading();
+                
+                // Merge in any locally downloaded files not in the manifest
+                mergeLocalDownloads(states);
+                
                 adapter.setStates(states);
                 
                 if (states.isEmpty()) {
-                    showError("No states available. Check your internet connection.");
+                    showError("No regions available. Check your internet connection.");
                 }
             }
 
             @Override
             public void onError(String error) {
                 hideLoading();
-                showError("Failed to load states: " + error + 
+                showError("Failed to load regions: " + error + 
                          "\n\nMake sure the data repository is configured.");
                 
                 // Still show downloaded states
                 showDownloadedStatesOnly();
             }
         });
+    }
+    
+    private void mergeLocalDownloads(List<OfflineDataManager.StateInfo> states) {
+        // Get list of locally downloaded state IDs
+        List<String> downloaded = database.getDownloadedStates();
+        
+        // Check each local download and add if not in manifest
+        for (String stateId : downloaded) {
+            boolean found = false;
+            for (OfflineDataManager.StateInfo state : states) {
+                if (state.id.equals(stateId)) {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                // Local file not in manifest - add it
+                OfflineDataManager.StateInfo info = new OfflineDataManager.StateInfo();
+                info.id = stateId;
+                info.name = formatStateName(stateId);
+                info.abbrev = "";
+                info.downloaded = true;
+                
+                OfflineAddressDatabase.DatabaseStats stats = database.getStats(stateId);
+                if (stats != null) {
+                    info.size = stats.fileSizeBytes;
+                    info.placeCount = stats.placeCount;
+                }
+                
+                states.add(info);
+            }
+        }
     }
 
     private void showDownloadedStatesOnly() {

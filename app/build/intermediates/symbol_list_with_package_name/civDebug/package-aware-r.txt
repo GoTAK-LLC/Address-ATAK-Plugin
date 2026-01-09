@@ -125,6 +125,8 @@ drawable abc
 drawable arrowright
 drawable bg_button_accent
 drawable bg_button_dark
+drawable bg_button_delete
+drawable bg_button_download
 drawable bg_button_orange
 drawable bg_result_item
 drawable bg_search_input

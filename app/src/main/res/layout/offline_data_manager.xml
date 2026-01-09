@@ -45,7 +45,7 @@
             android:id="@+id/import_file_button"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
-            android:text="📁 Import File"
+            android:text="Import File"
             android:textSize="13sp"
             android:textColor="@android:color/white"
             android:background="@drawable/bg_button_dark"
