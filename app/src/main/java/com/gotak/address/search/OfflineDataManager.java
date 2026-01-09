@@ -33,15 +33,11 @@ public class OfflineDataManager {
     private static final String TAG = "OfflineDataManager";
     
     // GitHub repository hosting the address databases
-    // Using raw GitHub URLs - files served directly from repo
-    // Note: For files >100MB, use GitHub Releases instead
+    // Downloads from GitHub Releases (supports large files)
     private static final String GITHUB_REPO = "GoTAK-LLC/Address-ATAK-Plugin-";
-    private static final String BRANCH = "main";
-    private static final String BASE_URL = "https://raw.githubusercontent.com/" + GITHUB_REPO + "/" + BRANCH + "/tools/output/";
+    private static final String RELEASE_TAG = "databases";
+    private static final String BASE_URL = "https://github.com/" + GITHUB_REPO + "/releases/download/" + RELEASE_TAG + "/";
     private static final String MANIFEST_URL = BASE_URL + "manifest.json";
-    
-    // Alternative: Direct URL if self-hosting
-    // private static final String BASE_URL = "https://your-server.com/atak-address-data/";
     
     private static final String USER_AGENT = "ATAK-AddressPlugin/1.0";
     private static final int CONNECT_TIMEOUT = 15000;

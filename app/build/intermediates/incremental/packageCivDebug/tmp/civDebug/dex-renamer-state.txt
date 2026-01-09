@@ -1,10 +1,9 @@
-#Thu Jan 08 05:20:35 CET 2026
+#Fri Jan 09 02:24:49 CET 2026
 path.4=7/classes.dex
 path.3=3/classes.dex
 path.2=2/classes.dex
 path.1=0/classes.dex
-path.6=classes2.dex
-path.5=8/classes.dex
+path.5=classes2.dex
 path.0=classes.dex
 base.4=C\:\\Users\\matth\\Development\\ATAK-Plugins\\ATAK-CIV-5.4.0.24-SDK\\plugins\\Address-ATAK-Plugin\\app\\build\\intermediates\\dex\\civDebug\\mergeProjectDexCivDebug\\7\\classes.dex
 base.3=C\:\\Users\\matth\\Development\\ATAK-Plugins\\ATAK-CIV-5.4.0.24-SDK\\plugins\\Address-ATAK-Plugin\\app\\build\\intermediates\\dex\\civDebug\\mergeProjectDexCivDebug\\3\\classes.dex
@@ -15,8 +14,6 @@ renamed.3=classes4.dex
 renamed.2=classes3.dex
 renamed.1=classes2.dex
 renamed.0=classes.dex
-renamed.6=classes7.dex
 renamed.5=classes6.dex
-base.6=C\:\\Users\\matth\\Development\\ATAK-Plugins\\ATAK-CIV-5.4.0.24-SDK\\plugins\\Address-ATAK-Plugin\\app\\build\\intermediates\\dex\\civDebug\\mergeExtDexCivDebug\\classes2.dex
 renamed.4=classes5.dex
-base.5=C\:\\Users\\matth\\Development\\ATAK-Plugins\\ATAK-CIV-5.4.0.24-SDK\\plugins\\Address-ATAK-Plugin\\app\\build\\intermediates\\dex\\civDebug\\mergeProjectDexCivDebug\\8\\classes.dex
+base.5=C\:\\Users\\matth\\Development\\ATAK-Plugins\\ATAK-CIV-5.4.0.24-SDK\\plugins\\Address-ATAK-Plugin\\app\\build\\intermediates\\dex\\civDebug\\mergeExtDexCivDebug\\classes2.dex
