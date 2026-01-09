@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.gotak.address.plugin"
-    android:versionCode="1767926085"
-    android:versionName="1.0.4 (0c044b6a) - [5.2.0]" >
+    android:versionCode="1767927381"
+    android:versionName="1.0.4 (ee3d42a7) - [5.2.0]" >
 
     <uses-sdk
         android:minSdkVersion="21"

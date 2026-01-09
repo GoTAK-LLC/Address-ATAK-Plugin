@@ -123,7 +123,7 @@ public class OfflineStateAdapter extends RecyclerView.Adapter<OfflineStateAdapte
             if (state.downloaded) {
                 downloadedIcon.setVisibility(View.VISIBLE);
                 actionButton.setText("Delete");
-                actionButton.setBackgroundColor(0xFFD32F2F); // Red for delete
+                actionButton.setBackgroundResource(R.drawable.bg_button_delete);
                 actionButton.setOnClickListener(v -> {
                     if (listener != null) {
                         listener.onDelete(state);
@@ -132,7 +132,7 @@ public class OfflineStateAdapter extends RecyclerView.Adapter<OfflineStateAdapte
             } else {
                 downloadedIcon.setVisibility(View.GONE);
                 actionButton.setText("Download");
-                actionButton.setBackgroundColor(0xFF4CAF50); // Green for download
+                actionButton.setBackgroundResource(R.drawable.bg_button_download);
                 actionButton.setOnClickListener(v -> {
                     if (listener != null) {
                         listener.onDownload(state);

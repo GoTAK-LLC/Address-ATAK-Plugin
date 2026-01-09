@@ -35,9 +35,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="(VA)"
+                android:text=""
                 android:textSize="14sp"
-                android:textColor="#888888" />
+                android:textColor="#888888"
+                android:visibility="gone" />
 
             <!-- Downloaded indicator -->
             <ImageView
@@ -69,8 +70,10 @@
         android:layout_height="36dp"
         android:text="Download"
         android:textSize="12sp"
-        android:minWidth="80dp"
-        android:paddingHorizontal="12dp" />
+        android:textColor="@android:color/white"
+        android:background="@drawable/bg_button_dark"
+        android:minWidth="90dp"
+        android:paddingHorizontal="16dp" />
 
 </LinearLayout>
 

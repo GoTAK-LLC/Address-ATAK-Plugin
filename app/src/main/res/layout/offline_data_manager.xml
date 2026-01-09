@@ -44,11 +44,13 @@
         <Button
             android:id="@+id/import_file_button"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="40dp"
             android:text="📁 Import File"
-            android:textSize="12sp"
+            android:textSize="13sp"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_button_dark"
             android:minWidth="0dp"
-            android:paddingHorizontal="12dp" />
+            android:paddingHorizontal="16dp" />
 
         <View
             android:layout_width="0dp"
@@ -167,9 +169,11 @@
             <Button
                 android:id="@+id/cancel_download_button"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="36dp"
                 android:text="Cancel"
                 android:textSize="12sp"
+                android:textColor="@android:color/white"
+                android:background="@drawable/bg_button_delete"
                 android:minWidth="0dp"
                 android:paddingHorizontal="16dp" />
         </LinearLayout>
