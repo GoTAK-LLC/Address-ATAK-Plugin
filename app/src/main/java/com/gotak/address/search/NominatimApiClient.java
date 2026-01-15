@@ -5,6 +5,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.LruCache;
 
 import com.atakmap.coremap.log.Log;
 
@@ -50,6 +51,11 @@ public class NominatimApiClient {
 
     private final ExecutorService executor;
     private final Handler mainHandler;
+    
+    // LRU cache for recent searches (50 entries max)
+    // Returns instant results for repeated queries
+    private static final int CACHE_SIZE = 50;
+    private final LruCache<String, List<NominatimSearchResult>> searchCache = new LruCache<>(CACHE_SIZE);
     
     // Offline database support
     private Context context;
@@ -116,10 +122,23 @@ public class NominatimApiClient {
      * Runs on a background thread and returns results via callback on the main thread.
      * 
      * Search priority:
+     * 0. LRU cache (instant for repeated queries)
      * 1. Offline databases (instant, works without internet)
      * 2. Online APIs (Photon, then Nominatim as fallback)
      */
     public void search(String query, SearchCallback callback) {
+        // Normalize query for cache key
+        final String cacheKey = query.toLowerCase().trim();
+        
+        // Step 0: Check LRU cache first (instant return for repeated queries)
+        List<NominatimSearchResult> cached = searchCache.get(cacheKey);
+        if (cached != null) {
+            Log.d(TAG, "Cache hit for: " + query + " (" + cached.size() + " results)");
+            // Return a copy to prevent modification of cached data
+            mainHandler.post(() -> callback.onSuccess(new ArrayList<>(cached)));
+            return;
+        }
+        
         executor.execute(() -> {
             List<NominatimSearchResult> results = new ArrayList<>();
             
@@ -133,6 +152,8 @@ public class NominatimApiClient {
                     // If offline-only mode or we have good results, return them
                     if (offlineOnly || results.size() >= DEFAULT_LIMIT) {
                         final List<NominatimSearchResult> finalResults = results;
+                        // Cache the results
+                        searchCache.put(cacheKey, new ArrayList<>(finalResults));
                         mainHandler.post(() -> callback.onSuccess(finalResults));
                         return;
                     }
@@ -144,6 +165,10 @@ public class NominatimApiClient {
             // Step 2: If offline-only mode, return what we have
             if (offlineOnly) {
                 final List<NominatimSearchResult> finalResults = results;
+                // Cache even partial results
+                if (!finalResults.isEmpty()) {
+                    searchCache.put(cacheKey, new ArrayList<>(finalResults));
+                }
                 mainHandler.post(() -> callback.onSuccess(finalResults));
                 return;
             }
@@ -155,6 +180,8 @@ public class NominatimApiClient {
                 if (results.isEmpty()) {
                     mainHandler.post(() -> callback.onError("No network connection and no offline data"));
                 } else {
+                    // Cache offline results
+                    searchCache.put(cacheKey, new ArrayList<>(finalResults));
                     mainHandler.post(() -> callback.onSuccess(finalResults));
                 }
                 return;
@@ -177,6 +204,10 @@ public class NominatimApiClient {
                 }
                 
                 final List<NominatimSearchResult> finalResults = results;
+                // Cache successful results
+                if (!finalResults.isEmpty()) {
+                    searchCache.put(cacheKey, new ArrayList<>(finalResults));
+                }
                 mainHandler.post(() -> callback.onSuccess(finalResults));
             } catch (Exception e) {
                 Log.e(TAG, "Online search error: " + e.getMessage(), e);
@@ -188,12 +219,18 @@ public class NominatimApiClient {
                         results = nominatimResults;
                     }
                     final List<NominatimSearchResult> finalResults = results;
+                    // Cache fallback results
+                    if (!finalResults.isEmpty()) {
+                        searchCache.put(cacheKey, new ArrayList<>(finalResults));
+                    }
                     mainHandler.post(() -> callback.onSuccess(finalResults));
                 } catch (Exception e2) {
                     Log.e(TAG, "Fallback search also failed: " + e2.getMessage(), e2);
                     // Return offline results if we have any
                     if (!results.isEmpty()) {
                         final List<NominatimSearchResult> finalResults = results;
+                        // Cache even fallback offline results
+                        searchCache.put(cacheKey, new ArrayList<>(finalResults));
                         mainHandler.post(() -> callback.onSuccess(finalResults));
                     } else {
                         mainHandler.post(() -> callback.onError(e.getMessage()));
@@ -201,6 +238,14 @@ public class NominatimApiClient {
                 }
             }
         });
+    }
+    
+    /**
+     * Clear the search cache. Call this when offline databases are updated.
+     */
+    public void clearCache() {
+        searchCache.evictAll();
+        Log.d(TAG, "Search cache cleared");
     }
 
     /**

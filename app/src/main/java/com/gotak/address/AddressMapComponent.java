@@ -70,6 +70,11 @@ public class AddressMapComponent extends DropDownMapComponent {
                     "Show the address search panel");
             searchFilter.addAction(AddressSearchDropDown.HIDE_SEARCH,
                     "Hide the address search panel");
+            searchFilter.addAction(AddressSearchDropDown.NAVIGATE_TO_VIEW,
+                    "Navigate to a saved view by ID or name. Extras: view_id (String) or view_name (String)");
+            searchFilter.addAction(AddressSearchDropDown.NAVIGATE_TO_POSITION,
+                    "Navigate to arbitrary map position. Required: latitude (double), longitude (double). " +
+                    "Optional: scale (double), zoom (double), tilt (double), rotation (double), altitude (double)");
             this.registerDropDownReceiver(addressSearchDropDown, searchFilter);
             
             // Refresh POI icons after ATAK restart (delay to ensure map is ready)

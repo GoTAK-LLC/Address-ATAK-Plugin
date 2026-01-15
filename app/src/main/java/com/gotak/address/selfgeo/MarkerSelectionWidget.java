@@ -25,22 +25,29 @@ import com.atakmap.coremap.log.Log;
 import com.atakmap.coremap.maps.coords.GeoPoint;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Widget that displays the geocoded address for the currently selected marker.
+ * Widget that displays the geocoded address for the currently selected marker
+ * OR for the map center crosshairs (red X) when active.
  * Positioned in the top-right corner of the map, displaying white text that 
  * matches the size of coordinate text shown for markers.
  * 
- * When user taps a marker on the map, this widget shows the geocoded address
- * at that location.
+ * Modes:
+ * - When red X (crosshairs) is active: continuously shows address for map center
+ * - When red X is not active: shows address when a marker is tapped (stays until deselected)
  */
 public class MarkerSelectionWidget extends AbstractWidgetMapComponent 
         implements MapWidget.OnClickListener, SharedPreferences.OnSharedPreferenceChangeListener,
         MapMenuEventListener {
     
     private static final String TAG = "MarkerSelectionWidget";
+    
+    // ATAK's preference key for showing the map center crosshairs (red X)
+    private static final String ATAK_PREF_MAP_CENTER_DESIGNATOR = "map_center_designator";
     
     // Preference keys
     public static final String PREF_SHOW_MARKER_ADDRESS = "address_show_marker_selection";
@@ -59,9 +66,11 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
     // Colors (ARGB format)
     private static final int COLOR_WHITE = 0xFFFFFFFF;
     private static final int COLOR_RED = 0xFFFF4444;
+    private static final int COLOR_YELLOW = 0xFFFFFF00;  // For crosshairs mode
     
-    // Auto-hide timeout (milliseconds) - hide address after 10 seconds of no interaction
-    private static final long AUTO_HIDE_TIMEOUT = 10000;
+    // Crosshairs mode - continuous geocoding
+    private static final int CROSSHAIRS_REFRESH_PERIOD_MS = 1000;
+    private static final double MIN_DISTANCE_FOR_GEOCODE = 50.0;  // meters
     
     private MapView mapView;
     private Context pluginContext;
@@ -70,7 +79,8 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
     private LinearLayoutWidget layout;
     private TextWidget addressWidget;
     
-    private ExecutorService executor;
+    private ScheduledExecutorService scheduler;
+    private ScheduledFuture<?> crosshairsGeocodingTask;
     private Handler mainHandler;
     
     // Photon API fallback geocoder
@@ -81,8 +91,9 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
     private int lastDisplayedColor = 0;
     private MapItem currentSelectedItem;
     
-    // Auto-hide runnable
-    private Runnable autoHideRunnable;
+    // Crosshairs mode tracking
+    private boolean isCrosshairsMode = false;
+    private GeoPoint lastGeocodedPoint;
     
     // Double-tap detection
     private static final long DOUBLE_TAP_TIMEOUT = 300;
@@ -95,18 +106,11 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
         this.pluginContext = context;
         this.prefs = PreferenceManager.getDefaultSharedPreferences(MapView.getMapView().getContext());
         this.mainHandler = new Handler(Looper.getMainLooper());
-        this.executor = Executors.newSingleThreadExecutor();
+        this.scheduler = Executors.newSingleThreadScheduledExecutor();
         this.photonGeocoder = new ReverseGeocoder();
         
         // Register preference listener
         prefs.registerOnSharedPreferenceChangeListener(this);
-        
-        // Create auto-hide runnable
-        autoHideRunnable = () -> {
-            Log.d(TAG, "Auto-hiding marker address widget");
-            updateWidgetVisibility(false);
-            currentSelectedItem = null;
-        };
         
         // Create widget in TOP RIGHT corner
         RootLayoutWidget root = (RootLayoutWidget) mapView.getComponentExtra("rootLayoutWidget");
@@ -131,11 +135,14 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
             Log.e(TAG, "RootLayoutWidget is null!");
         }
         
-        // Register for map item click events
+        // Register for map item click events (for marker selection mode)
         Log.d(TAG, "Widget enabled: " + isWidgetEnabled());
         if (isWidgetEnabled()) {
             registerMapEventListener();
         }
+        
+        // Check if crosshairs are already active
+        updateCrosshairsMode();
     }
     
     @Override
@@ -143,16 +150,14 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
         Log.d(TAG, "onDestroyWidgets");
         
         unregisterMapEventListener();
-        
-        // Cancel auto-hide
-        mainHandler.removeCallbacks(autoHideRunnable);
+        stopCrosshairsGeocoding();
         
         if (prefs != null) {
             prefs.unregisterOnSharedPreferenceChangeListener(this);
         }
         
-        if (executor != null) {
-            executor.shutdown();
+        if (scheduler != null) {
+            scheduler.shutdown();
         }
         
         if (photonGeocoder != null) {
@@ -204,10 +209,19 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
      * Called when the radial menu is shown for a map item.
      * This is the reliable way to detect when a marker is tapped/selected.
      * Handles both PointMapItem (markers) and Shape (KML/KMZ objects, polygons, etc.)
+     * 
+     * Note: In crosshairs mode, marker selection is ignored - the widget always shows
+     * the crosshairs address.
      */
     @Override
     public boolean onShowMenu(MapItem item) {
         Log.d(TAG, "onShowMenu called for item: " + (item != null ? item.getUID() : "null"));
+        
+        // In crosshairs mode, ignore marker selection - crosshairs address takes priority
+        if (isCrosshairsMode) {
+            Log.d(TAG, "In crosshairs mode, ignoring marker selection");
+            return false;
+        }
         
         if (!isWidgetEnabled()) {
             Log.d(TAG, "Widget disabled, ignoring menu event");
@@ -232,12 +246,22 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
     }
     
     /**
-     * Called when the radial menu is hidden.
+     * Called when the radial menu is hidden (marker deselected).
+     * In crosshairs mode, don't hide - the crosshairs address should stay visible.
      */
     @Override
     public void onHideMenu(MapItem item) {
         Log.d(TAG, "onHideMenu called");
-        // Don't hide immediately - let auto-hide timer handle it
+        
+        // In crosshairs mode, don't hide the widget - crosshairs address stays visible
+        if (isCrosshairsMode) {
+            Log.d(TAG, "In crosshairs mode, keeping widget visible");
+            return;
+        }
+        
+        Log.d(TAG, "Hiding address widget");
+        updateWidgetVisibility(false);
+        currentSelectedItem = null;
     }
     
     /**
@@ -257,10 +281,6 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
         
         currentSelectedItem = item;
         
-        // Reset auto-hide timer
-        mainHandler.removeCallbacks(autoHideRunnable);
-        mainHandler.postDelayed(autoHideRunnable, AUTO_HIDE_TIMEOUT);
-        
         // Get marker title for logging
         String title = item.getTitle();
         if (title == null || title.isEmpty()) {
@@ -272,7 +292,7 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
         updateWidget("Loading address...", COLOR_WHITE);
         
         // Perform geocoding in background
-        performGeocoding(point);
+        performGeocoding(point, COLOR_WHITE);
     }
     
     /**
@@ -294,10 +314,6 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
         
         currentSelectedItem = shape;
         
-        // Reset auto-hide timer
-        mainHandler.removeCallbacks(autoHideRunnable);
-        mainHandler.postDelayed(autoHideRunnable, AUTO_HIDE_TIMEOUT);
-        
         // Get shape title for logging
         String title = shape.getTitle();
         if (title == null || title.isEmpty()) {
@@ -309,14 +325,16 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
         updateWidget("Loading address...", COLOR_WHITE);
         
         // Perform geocoding in background
-        performGeocoding(point);
+        performGeocoding(point, COLOR_WHITE);
     }
     
     /**
      * Perform geocoding for the given point.
+     * @param point The point to geocode
+     * @param successColor The color to use when geocoding succeeds
      */
-    private void performGeocoding(final GeoPoint point) {
-        executor.execute(() -> {
+    private void performGeocoding(final GeoPoint point, final int successColor) {
+        scheduler.execute(() -> {
             // Try ATAK's GeocodeManager first
             String formattedAddress = tryAtakGeocoder(point);
             
@@ -324,7 +342,7 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
             if (formattedAddress == null) {
                 if (isPhotonFallbackEnabled()) {
                     Log.d(TAG, "ATAK geocoder failed, falling back to Photon API");
-                    tryPhotonGeocoder(point);
+                    tryPhotonGeocoder(point, successColor);
                     return; // Photon is async
                 } else {
                     Log.d(TAG, "ATAK geocoder failed, Photon fallback disabled");
@@ -334,8 +352,9 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
             }
             
             // ATAK geocoder succeeded
+            lastGeocodedPoint = point;
             currentAddress = formattedAddress;
-            updateWidget(currentAddress, COLOR_WHITE);
+            updateWidget(currentAddress, successColor);
         });
     }
     
@@ -378,15 +397,18 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
     
     /**
      * Fallback: Try to geocode using Photon API.
+     * @param point The point to geocode
+     * @param successColor The color to use when geocoding succeeds
      */
-    private void tryPhotonGeocoder(final GeoPoint point) {
+    private void tryPhotonGeocoder(final GeoPoint point, final int successColor) {
         photonGeocoder.reverseGeocode(point.getLatitude(), point.getLongitude(),
                 new ReverseGeocoder.ReverseGeocodeCallback() {
             @Override
             public void onSuccess(String address) {
                 Log.d(TAG, "Photon geocoding success: " + address);
+                lastGeocodedPoint = point;
                 currentAddress = address;
-                updateWidget(currentAddress, COLOR_WHITE);
+                updateWidget(currentAddress, successColor);
             }
             
             @Override
@@ -484,9 +506,14 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
             openPluginSettings();
             lastClickTime = 0;
         } else {
-            // Single tap - refresh geocoding if we have a selected item
+            // Single tap - refresh geocoding
             Log.d(TAG, "Single tap on widget");
-            if (currentSelectedItem instanceof PointMapItem) {
+            
+            if (isCrosshairsMode) {
+                // In crosshairs mode, force refresh
+                lastGeocodedPoint = null;
+                performCrosshairsGeocoding();
+            } else if (currentSelectedItem instanceof PointMapItem) {
                 handleMarkerSelected((PointMapItem) currentSelectedItem);
             } else if (currentSelectedItem instanceof Shape) {
                 handleShapeSelected((Shape) currentSelectedItem);
@@ -515,12 +542,109 @@ public class MarkerSelectionWidget extends AbstractWidgetMapComponent
             
             if (enabled) {
                 registerMapEventListener();
+                updateCrosshairsMode();
             } else {
                 unregisterMapEventListener();
+                stopCrosshairsGeocoding();
                 updateWidgetVisibility(false);
                 currentSelectedItem = null;
             }
+        } else if (ATAK_PREF_MAP_CENTER_DESIGNATOR.equals(key)) {
+            // Crosshairs (red X) was toggled
+            updateCrosshairsMode();
         }
+    }
+    
+    /**
+     * Check if crosshairs (red X) are active and update mode accordingly.
+     */
+    private void updateCrosshairsMode() {
+        if (!isWidgetEnabled()) {
+            return;
+        }
+        
+        boolean crosshairsActive = isCrosshairsActive();
+        Log.d(TAG, "Crosshairs active: " + crosshairsActive + ", current mode: " + isCrosshairsMode);
+        
+        if (crosshairsActive && !isCrosshairsMode) {
+            // Entering crosshairs mode
+            Log.d(TAG, "Entering crosshairs mode");
+            isCrosshairsMode = true;
+            currentSelectedItem = null;  // Clear any marker selection
+            lastGeocodedPoint = null;
+            startCrosshairsGeocoding();
+        } else if (!crosshairsActive && isCrosshairsMode) {
+            // Exiting crosshairs mode
+            Log.d(TAG, "Exiting crosshairs mode");
+            isCrosshairsMode = false;
+            stopCrosshairsGeocoding();
+            updateWidgetVisibility(false);
+            lastGeocodedPoint = null;
+        }
+    }
+    
+    /**
+     * Check if ATAK's crosshairs (red X) are currently active.
+     */
+    private boolean isCrosshairsActive() {
+        return prefs.getBoolean(ATAK_PREF_MAP_CENTER_DESIGNATOR, false);
+    }
+    
+    /**
+     * Start continuous geocoding for crosshairs position.
+     */
+    private void startCrosshairsGeocoding() {
+        Log.d(TAG, "Starting crosshairs geocoding");
+        
+        if (crosshairsGeocodingTask != null) {
+            crosshairsGeocodingTask.cancel(false);
+        }
+        
+        crosshairsGeocodingTask = scheduler.scheduleWithFixedDelay(
+                this::performCrosshairsGeocoding,
+                0,
+                CROSSHAIRS_REFRESH_PERIOD_MS,
+                TimeUnit.MILLISECONDS
+        );
+    }
+    
+    /**
+     * Stop continuous geocoding for crosshairs.
+     */
+    private void stopCrosshairsGeocoding() {
+        Log.d(TAG, "Stopping crosshairs geocoding");
+        
+        if (crosshairsGeocodingTask != null) {
+            crosshairsGeocodingTask.cancel(false);
+            crosshairsGeocodingTask = null;
+        }
+    }
+    
+    /**
+     * Perform geocoding for the current crosshairs (map center) position.
+     */
+    private void performCrosshairsGeocoding() {
+        if (mapView == null || !isCrosshairsMode) return;
+        
+        // Get the map center point (crosshairs position)
+        GeoPoint point = mapView.getCenterPoint().get();
+        if (point == null || !point.isValid()) {
+            Log.d(TAG, "Invalid map center point");
+            return;
+        }
+        
+        // Skip if the map center hasn't moved significantly
+        if (lastGeocodedPoint != null) {
+            double distance = point.distanceTo(lastGeocodedPoint);
+            if (distance < MIN_DISTANCE_FOR_GEOCODE) {
+                return;
+            }
+        }
+        
+        Log.d(TAG, "Geocoding crosshairs: " + point.getLatitude() + ", " + point.getLongitude());
+        
+        // Perform geocoding
+        performGeocoding(point, COLOR_YELLOW);
     }
     
     private boolean isWidgetEnabled() {

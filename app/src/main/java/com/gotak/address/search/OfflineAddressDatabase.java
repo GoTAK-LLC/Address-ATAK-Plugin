@@ -10,8 +10,15 @@ import com.gotak.address.search.nearby.PointOfInterestType;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Manages offline address databases for state-level geocoding and POI search.
@@ -28,9 +35,45 @@ public class OfflineAddressDatabase {
     private static final int DEFAULT_LIMIT = 10;
     private static final int POI_LIMIT = 100;
     
+    // Maximum number of database connections to keep open
+    // Keeps recently used databases open to avoid repeated open/close overhead
+    private static final int MAX_OPEN_DATABASES = 5;
+    
+    // Number of threads for parallel state searches
+    private static final int SEARCH_THREAD_POOL_SIZE = 4;
+    
+    // Timeout for parallel searches (seconds)
+    private static final int SEARCH_TIMEOUT_SECONDS = 3;
+    
     private final File databaseDir;
     private SQLiteDatabase currentDb;
     private String currentState;
+    
+    // LRU cache of open database connections - avoids repeated open/close overhead
+    // Access order = true means least recently used entries are evicted first
+    private final LinkedHashMap<String, SQLiteDatabase> databaseCache = 
+        new LinkedHashMap<String, SQLiteDatabase>(MAX_OPEN_DATABASES, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, SQLiteDatabase> eldest) {
+                if (size() > MAX_OPEN_DATABASES) {
+                    // Close the evicted database connection
+                    try {
+                        SQLiteDatabase db = eldest.getValue();
+                        if (db != null && db.isOpen()) {
+                            db.close();
+                            Log.d(TAG, "Evicted database from cache: " + eldest.getKey());
+                        }
+                    } catch (Exception e) {
+                        Log.w(TAG, "Error closing evicted database: " + e.getMessage());
+                    }
+                    return true;
+                }
+                return false;
+            }
+        };
+    
+    // Executor for parallel state searches
+    private final ExecutorService searchExecutor = Executors.newFixedThreadPool(SEARCH_THREAD_POOL_SIZE);
     
     // Use ATAK's tools directory for easy access
     private static final String ATAK_ADDRESS_DIR = "/sdcard/atak/tools/address";
@@ -84,9 +127,22 @@ public class OfflineAddressDatabase {
      * Delete a downloaded state database.
      */
     public boolean deleteState(String stateId) {
-        // Close if it's the current database
+        // Remove from cache and close if open
+        synchronized (databaseCache) {
+            SQLiteDatabase cachedDb = databaseCache.remove(stateId);
+            if (cachedDb != null && cachedDb.isOpen()) {
+                try {
+                    cachedDb.close();
+                } catch (Exception e) {
+                    Log.w(TAG, "Error closing database during delete: " + e.getMessage());
+                }
+            }
+        }
+        
+        // Clear current state if it matches
         if (stateId.equals(currentState)) {
-            close();
+            currentDb = null;
+            currentState = null;
         }
         
         File dbFile = getDatabaseFile(stateId);
@@ -98,16 +154,31 @@ public class OfflineAddressDatabase {
     
     /**
      * Open a state's database for searching.
+     * Uses connection pooling to avoid repeated open/close overhead.
      */
     public boolean openState(String stateId) {
-        // Already open
+        // Check if already the current database
         if (stateId.equals(currentState) && currentDb != null && currentDb.isOpen()) {
             return true;
         }
         
-        // Close previous database
-        close();
+        // Check if in cache (this also updates access order for LRU)
+        synchronized (databaseCache) {
+            SQLiteDatabase cachedDb = databaseCache.get(stateId);
+            if (cachedDb != null && cachedDb.isOpen()) {
+                currentDb = cachedDb;
+                currentState = stateId;
+                Log.d(TAG, "Using cached database: " + stateId);
+                return true;
+            }
+            
+            // Remove stale entry if database was closed
+            if (cachedDb != null) {
+                databaseCache.remove(stateId);
+            }
+        }
         
+        // Database not in cache, need to open it
         File dbFile = getDatabaseFile(stateId);
         if (!dbFile.exists()) {
             Log.w(TAG, "Database not found: " + dbFile.getPath());
@@ -115,13 +186,20 @@ public class OfflineAddressDatabase {
         }
         
         try {
-            currentDb = SQLiteDatabase.openDatabase(
+            SQLiteDatabase newDb = SQLiteDatabase.openDatabase(
                     dbFile.getPath(),
                     null,
                     SQLiteDatabase.OPEN_READONLY
             );
+            
+            // Add to cache (may evict oldest entry)
+            synchronized (databaseCache) {
+                databaseCache.put(stateId, newDb);
+            }
+            
+            currentDb = newDb;
             currentState = stateId;
-            Log.i(TAG, "Opened database: " + stateId);
+            Log.i(TAG, "Opened and cached database: " + stateId);
             return true;
         } catch (Exception e) {
             Log.e(TAG, "Failed to open database: " + e.getMessage(), e);
@@ -130,25 +208,289 @@ public class OfflineAddressDatabase {
     }
     
     /**
-     * Search all downloaded states for matching places.
+     * Get a database connection for a specific state (thread-safe for parallel searches).
+     * Returns null if the state database doesn't exist or can't be opened.
      */
-    public List<NominatimSearchResult> searchAllStates(String query) {
-        List<NominatimSearchResult> allResults = new ArrayList<>();
-        
-        for (String state : getDownloadedStates()) {
-            if (openState(state)) {
-                List<NominatimSearchResult> stateResults = search(query, DEFAULT_LIMIT);
-                allResults.addAll(stateResults);
+    private SQLiteDatabase getDatabaseForState(String stateId) {
+        // Check cache first
+        synchronized (databaseCache) {
+            SQLiteDatabase cachedDb = databaseCache.get(stateId);
+            if (cachedDb != null && cachedDb.isOpen()) {
+                return cachedDb;
+            }
+            
+            // Remove stale entry
+            if (cachedDb != null) {
+                databaseCache.remove(stateId);
             }
         }
         
-        // Sort by relevance and limit total results
-        // (FTS5 results are already ranked, but we should limit total)
+        // Open new connection
+        File dbFile = getDatabaseFile(stateId);
+        if (!dbFile.exists()) {
+            return null;
+        }
+        
+        try {
+            SQLiteDatabase newDb = SQLiteDatabase.openDatabase(
+                    dbFile.getPath(),
+                    null,
+                    SQLiteDatabase.OPEN_READONLY
+            );
+            
+            synchronized (databaseCache) {
+                databaseCache.put(stateId, newDb);
+            }
+            
+            return newDb;
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to open database for parallel search: " + stateId + " - " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Search all downloaded states for matching places.
+     * Uses parallel execution for multi-state searches and early termination
+     * when good results are found to improve performance.
+     */
+    public List<NominatimSearchResult> searchAllStates(String query) {
+        List<String> states = getDownloadedStates();
+        
+        // If only one state, no need for parallel execution
+        if (states.size() <= 1) {
+            return searchAllStatesSequential(query, states);
+        }
+        
+        // Parallel search for multiple states
+        return searchAllStatesParallel(query, states);
+    }
+    
+    /**
+     * Sequential search for single-state scenarios (avoids thread overhead).
+     */
+    private List<NominatimSearchResult> searchAllStatesSequential(String query, List<String> states) {
+        List<NominatimSearchResult> allResults = new ArrayList<>();
+        String queryLower = query.toLowerCase().trim();
+        
+        for (String state : states) {
+            if (openState(state)) {
+                List<NominatimSearchResult> stateResults = search(query, DEFAULT_LIMIT);
+                allResults.addAll(stateResults);
+                
+                // Early termination: if we found exact/good matches, stop searching
+                if (stateResults.size() >= DEFAULT_LIMIT || hasGoodMatch(stateResults, queryLower)) {
+                    Log.d(TAG, "Early termination: found " + stateResults.size() + " results in " + state);
+                    break;
+                }
+            }
+        }
+        
         if (allResults.size() > DEFAULT_LIMIT) {
             return allResults.subList(0, DEFAULT_LIMIT);
         }
         
         return allResults;
+    }
+    
+    /**
+     * Parallel search across multiple states for faster results.
+     * Submits all searches simultaneously and collects results with early termination.
+     */
+    private List<NominatimSearchResult> searchAllStatesParallel(String query, List<String> states) {
+        String queryLower = query.toLowerCase().trim();
+        List<Future<StateSearchResult>> futures = new ArrayList<>();
+        
+        // Submit search tasks for all states in parallel
+        for (String state : states) {
+            Callable<StateSearchResult> task = () -> {
+                List<NominatimSearchResult> results = searchStateWithDb(state, query, DEFAULT_LIMIT);
+                return new StateSearchResult(state, results);
+            };
+            futures.add(searchExecutor.submit(task));
+        }
+        
+        // Collect results with early termination
+        List<NominatimSearchResult> allResults = new ArrayList<>();
+        boolean foundGoodMatch = false;
+        
+        for (Future<StateSearchResult> future : futures) {
+            // Skip remaining futures if we already have good results
+            if (foundGoodMatch && allResults.size() >= DEFAULT_LIMIT) {
+                future.cancel(true);
+                continue;
+            }
+            
+            try {
+                StateSearchResult stateResult = future.get(SEARCH_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                
+                if (stateResult != null && stateResult.results != null && !stateResult.results.isEmpty()) {
+                    allResults.addAll(stateResult.results);
+                    
+                    // Check if we found a good match
+                    if (stateResult.results.size() >= DEFAULT_LIMIT || 
+                        hasGoodMatch(stateResult.results, queryLower)) {
+                        Log.d(TAG, "Parallel search: good match found in " + stateResult.stateId + 
+                              " (" + stateResult.results.size() + " results)");
+                        foundGoodMatch = true;
+                    }
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Parallel search task failed: " + e.getMessage());
+                // Continue with other results
+            }
+        }
+        
+        // Sort by relevance and limit total results
+        if (allResults.size() > DEFAULT_LIMIT) {
+            return allResults.subList(0, DEFAULT_LIMIT);
+        }
+        
+        return allResults;
+    }
+    
+    /**
+     * Helper class to hold state search results.
+     */
+    private static class StateSearchResult {
+        final String stateId;
+        final List<NominatimSearchResult> results;
+        
+        StateSearchResult(String stateId, List<NominatimSearchResult> results) {
+            this.stateId = stateId;
+            this.results = results;
+        }
+    }
+    
+    /**
+     * Search a specific state's database using a dedicated connection (thread-safe).
+     * Used for parallel searches where each thread needs its own database access.
+     */
+    private List<NominatimSearchResult> searchStateWithDb(String stateId, String query, int limit) {
+        List<NominatimSearchResult> results = new ArrayList<>();
+        
+        SQLiteDatabase db = getDatabaseForState(stateId);
+        if (db == null || !db.isOpen()) {
+            return results;
+        }
+        
+        // Sanitize query for FTS5
+        String ftsQuery = sanitizeFtsQuery(query);
+        if (ftsQuery.isEmpty()) {
+            return results;
+        }
+        
+        Cursor cursor = null;
+        try {
+            String sql = 
+                "SELECT p.id, p.osm_id, p.osm_type, p.lat, p.lon, " +
+                "       p.name, p.display_name, p.type " +
+                "FROM places_fts " +
+                "JOIN places p ON places_fts.rowid = p.id " +
+                "WHERE places_fts MATCH ? " +
+                "ORDER BY bm25(places_fts) " +
+                "LIMIT ?";
+            
+            cursor = db.rawQuery(sql, new String[]{ftsQuery, String.valueOf(limit)});
+            
+            while (cursor.moveToNext()) {
+                NominatimSearchResult result = cursorToResult(cursor);
+                if (result != null) {
+                    results.add(result);
+                }
+            }
+            
+            Log.d(TAG, "Parallel search '" + query + "' in " + stateId + " found " + results.size() + " results");
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Parallel search error in " + stateId + ": " + e.getMessage(), e);
+            // Try LIKE fallback
+            results = searchWithLikeOnDb(db, query, limit);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        
+        return results;
+    }
+    
+    /**
+     * LIKE search fallback for a specific database (thread-safe).
+     */
+    private List<NominatimSearchResult> searchWithLikeOnDb(SQLiteDatabase db, String query, int limit) {
+        List<NominatimSearchResult> results = new ArrayList<>();
+        
+        if (db == null || !db.isOpen()) {
+            return results;
+        }
+        
+        Cursor cursor = null;
+        try {
+            String likeQuery = "%" + query.replace("%", "").replace("_", "") + "%";
+            
+            String sql = 
+                "SELECT id, osm_id, osm_type, lat, lon, name, display_name, type " +
+                "FROM places " +
+                "WHERE name LIKE ? OR display_name LIKE ? OR street LIKE ? OR city LIKE ? " +
+                "LIMIT ?";
+            
+            cursor = db.rawQuery(sql, new String[]{
+                    likeQuery, likeQuery, likeQuery, likeQuery, String.valueOf(limit)
+            });
+            
+            while (cursor.moveToNext()) {
+                NominatimSearchResult result = cursorToResult(cursor);
+                if (result != null) {
+                    results.add(result);
+                }
+            }
+            
+        } catch (Exception e) {
+            Log.e(TAG, "LIKE search error: " + e.getMessage(), e);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        
+        return results;
+    }
+    
+    /**
+     * Check if results contain a good match for the query.
+     * A "good match" is when the display name or name contains all query terms.
+     */
+    private boolean hasGoodMatch(List<NominatimSearchResult> results, String queryLower) {
+        if (results.isEmpty()) {
+            return false;
+        }
+        
+        // Split query into words for matching
+        String[] queryWords = queryLower.split("\\s+");
+        
+        for (NominatimSearchResult result : results) {
+            String displayNameLower = result.getDisplayName() != null ? 
+                result.getDisplayName().toLowerCase() : "";
+            String nameLower = result.getName() != null ? 
+                result.getName().toLowerCase() : "";
+            String combined = displayNameLower + " " + nameLower;
+            
+            // Check if all query words appear in the result
+            boolean allWordsMatch = true;
+            for (String word : queryWords) {
+                if (!word.isEmpty() && !combined.contains(word)) {
+                    allWordsMatch = false;
+                    break;
+                }
+            }
+            
+            if (allWordsMatch) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     /**
@@ -694,8 +1036,13 @@ public class OfflineAddressDatabase {
     
     /**
      * Sanitize a query string for FTS5.
-     * - Adds prefix matching (word*)
+     * - Uses exact matching for numeric terms (street numbers)
+     * - Only adds prefix matching (*) to the LAST word (for partial typing)
      * - Escapes special characters
+     * 
+     * This optimization dramatically improves performance for address searches.
+     * "780 lynnhaven pkwy" becomes "780 lynnhaven pkwy*" instead of "780* lynnhaven* pkwy*"
+     * which avoids the expensive prefix scan on numeric terms.
      */
     private String sanitizeFtsQuery(String query) {
         if (query == null || query.trim().isEmpty()) {
@@ -712,17 +1059,44 @@ public class OfflineAddressDatabase {
                 .replace("-", " ")
                 .replace(":", " ");
         
-        // Split into words and add prefix matching
+        // Split into words
         String[] words = sanitized.split("\\s+");
         StringBuilder ftsQuery = new StringBuilder();
         
+        // Filter out empty words
+        List<String> nonEmptyWords = new ArrayList<>();
         for (String word : words) {
             if (!word.isEmpty()) {
-                if (ftsQuery.length() > 0) {
-                    ftsQuery.append(" ");
-                }
-                // Add prefix matching for partial word search
+                nonEmptyWords.add(word);
+            }
+        }
+        
+        for (int i = 0; i < nonEmptyWords.size(); i++) {
+            String word = nonEmptyWords.get(i);
+            
+            if (ftsQuery.length() > 0) {
+                ftsQuery.append(" ");
+            }
+            
+            // Check if this is the last word (user might still be typing)
+            boolean isLastWord = (i == nonEmptyWords.size() - 1);
+            
+            // Check if the word is purely numeric (street number)
+            boolean isNumeric = word.matches("\\d+");
+            
+            // Optimization: 
+            // - NEVER use prefix matching on numeric terms (e.g., "780" not "780*")
+            //   because "780*" matches 780, 7800, 78001, etc. which is very slow
+            // - Only use prefix on the last word IF it's not numeric (user still typing)
+            if (isNumeric) {
+                // Exact match for numbers - this is crucial for performance
+                ftsQuery.append(word);
+            } else if (isLastWord && word.length() >= 2) {
+                // Prefix match only on last non-numeric word for partial typing
                 ftsQuery.append(word).append("*");
+            } else {
+                // Exact match for completed words
+                ftsQuery.append(word);
             }
         }
         
@@ -783,18 +1157,42 @@ public class OfflineAddressDatabase {
     }
     
     /**
-     * Close the current database.
+     * Close all database connections and shutdown the search executor.
+     * Call this when the plugin is being destroyed.
      */
     public void close() {
-        if (currentDb != null) {
-            try {
-                currentDb.close();
-            } catch (Exception e) {
-                Log.e(TAG, "Error closing database: " + e.getMessage());
+        // Close current database reference
+        currentDb = null;
+        currentState = null;
+        
+        // Close all cached database connections
+        synchronized (databaseCache) {
+            for (Map.Entry<String, SQLiteDatabase> entry : databaseCache.entrySet()) {
+                try {
+                    SQLiteDatabase db = entry.getValue();
+                    if (db != null && db.isOpen()) {
+                        db.close();
+                        Log.d(TAG, "Closed cached database: " + entry.getKey());
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error closing database " + entry.getKey() + ": " + e.getMessage());
+                }
             }
-            currentDb = null;
-            currentState = null;
+            databaseCache.clear();
         }
+        
+        // Shutdown the search executor
+        try {
+            searchExecutor.shutdown();
+            if (!searchExecutor.awaitTermination(2, TimeUnit.SECONDS)) {
+                searchExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            searchExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        
+        Log.i(TAG, "OfflineAddressDatabase closed");
     }
     
     /**

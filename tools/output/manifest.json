@@ -50,6 +50,14 @@
   ],
   "regions": [
     {
+      "id": "europe-germany",
+      "name": "Germany",
+      "size": 5467828224,
+      "place_count": 21114455,
+      "poi_count": 1550121,
+      "filename": "europe-germany.db"
+    },
+    {
       "id": "europe-spain",
       "name": "Spain",
       "size": 746188800,

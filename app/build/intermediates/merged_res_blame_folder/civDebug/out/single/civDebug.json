@@ -92,6 +92,10 @@
         "source": "com.gotak.address.plugin.app-main-12:/drawable/ic_location_world.xml"
     },
     {
+        "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_ic_views_empty.xml.flat",
+        "source": "com.gotak.address.plugin.app-main-12:/drawable/ic_views_empty.xml"
+    },
+    {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/xml_preferences.xml.flat",
         "source": "com.gotak.address.plugin.app-main-12:/xml/preferences.xml"
     },
@@ -102,6 +106,10 @@
     {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_ic_poi_restaurant.xml.flat",
         "source": "com.gotak.address.plugin.app-main-12:/drawable/ic_poi_restaurant.xml"
+    },
+    {
+        "merged": "com.gotak.address.plugin.app-merged_res-9:/layout_view_card_item.xml.flat",
+        "source": "com.gotak.address.plugin.app-main-12:/layout/view_card_item.xml"
     },
     {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/layout_offline_data_manager.xml.flat",
@@ -134,6 +142,10 @@
     {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/xml_com_android_vending_archive_opt_out.xml.flat",
         "source": "com.gotak.address.plugin.app-main-12:/xml/com_android_vending_archive_opt_out.xml"
+    },
+    {
+        "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_ic_edit.xml.flat",
+        "source": "com.gotak.address.plugin.app-main-12:/drawable/ic_edit.xml"
     },
     {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable-xhdpi_rv_vertical.png.flat",
@@ -200,6 +212,10 @@
         "source": "com.gotak.address.plugin.app-main-12:/drawable/ic_poi_school.xml"
     },
     {
+        "merged": "com.gotak.address.plugin.app-merged_res-9:/layout_views_content.xml.flat",
+        "source": "com.gotak.address.plugin.app-main-12:/layout/views_content.xml"
+    },
+    {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_ic_launcher.png.flat",
         "source": "com.gotak.address.plugin.app-main-12:/drawable/ic_launcher.png"
     },
@@ -238,6 +254,10 @@
     {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_ic_poi_water_tower.xml.flat",
         "source": "com.gotak.address.plugin.app-main-12:/drawable/ic_poi_water_tower.xml"
+    },
+    {
+        "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_ic_delete.xml.flat",
+        "source": "com.gotak.address.plugin.app-main-12:/drawable/ic_delete.xml"
     },
     {
         "merged": "com.gotak.address.plugin.app-merged_res-9:/drawable_ic_navigation.xml.flat",

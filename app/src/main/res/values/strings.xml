@@ -574,4 +574,30 @@
     <string name="no_category_results">No %1$s found nearby</string>
     <string name="unable_to_determine_location">Unable to determine your location</string>
 
+    <!-- Views Tab -->
+    <string name="tab_views">Views</string>
+    <string name="views_header">Saved Views</string>
+    <string name="save_view">Save View</string>
+    <string name="no_saved_views">No saved views</string>
+    <string name="save_view_hint">Tap \"Save View\" to capture your current map position</string>
+    <string name="view_thumbnail_desc">View thumbnail</string>
+    <string name="rename_view">Rename view</string>
+    <string name="assign_hotkey">Assign hotkey</string>
+    <string name="delete_view">Delete view</string>
+    <string name="view_saved">View saved</string>
+    <string name="view_deleted">View deleted</string>
+    <string name="view_renamed">View renamed</string>
+    <string name="hotkey_assigned">Hotkey %d assigned</string>
+    <string name="hotkey_cleared">Hotkey cleared</string>
+    <string name="max_views_reached">Maximum views reached (50)</string>
+    <string name="enter_view_name">Enter view name</string>
+    <string name="select_hotkey">Select hotkey (1-9)</string>
+    <string name="none">None</string>
+    <string name="capturing_view">Capturing view…</string>
+    <string name="navigating_to_view">Navigating to view…</string>
+    <string name="delete_view_confirm">Delete this view?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+
 </resources>

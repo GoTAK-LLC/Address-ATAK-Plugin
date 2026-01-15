@@ -136,6 +136,8 @@ drawable dot_selector
 drawable dot_unselected
 drawable ic_add
 drawable ic_clear
+drawable ic_delete
+drawable ic_edit
 drawable ic_launcher
 drawable ic_launcher_badge
 drawable ic_location_city
@@ -170,6 +172,7 @@ drawable ic_poi_worship
 drawable ic_remove
 drawable ic_route
 drawable ic_search
+drawable ic_views_empty
 drawable new_dark_button_bg
 drawable new_dark_button_disabled
 drawable new_dark_button_selected
@@ -230,6 +233,7 @@ id action_divider
 id action_image
 id action_text
 id actions
+id aspect_ratio_spacer
 id async
 id blocking
 id cancel_download_button
@@ -297,6 +301,7 @@ id notification_main_column
 id notification_main_column_container
 id offline_data_button
 id offline_data_container
+id powered_by_gotak
 id refresh_button
 id result_address
 id result_drop_marker
@@ -321,7 +326,9 @@ id tab_container
 id tab_flipper
 id tab_indicator_address
 id tab_indicator_nearby
+id tab_indicator_views
 id tab_nearby
+id tab_views
 id tag_accessibility_actions
 id tag_accessibility_clickable_spans
 id tag_accessibility_heading
@@ -334,6 +341,16 @@ id text
 id text2
 id time
 id title
+id view_delete_button
+id view_mode_badge
+id view_name
+id view_rename_button
+id view_subtitle
+id view_thumbnail
+id views_empty_state
+id views_header
+id views_list
+id views_save_button
 integer status_bar_notification_info_maxnum
 layout address_history_item
 layout address_search_panel
@@ -349,6 +366,8 @@ layout notification_template_part_chronometer
 layout notification_template_part_time
 layout offline_data_manager
 layout offline_state_item
+layout view_card_item
+layout views_content
 string Manual_mode
 string Remove_item_warn
 string action_settings
@@ -375,6 +394,7 @@ string address_plugin_preferences
 string alt_buttons
 string app_desc
 string app_name
+string assign_hotkey
 string associations
 string bad_things
 string broadcast
@@ -383,7 +403,9 @@ string broadcast_no
 string broadcast_yes
 string bumpControl
 string cameraLauncher
+string cancel
 string cancel_btn
+string capturing_view
 string categories
 string clear_all
 string clear_button_desc
@@ -396,6 +418,9 @@ string customMenuFactory
 string customType
 string decrease_radius
 string default_buttons
+string delete
+string delete_view
+string delete_view_confirm
 string deselect_all
 string documentation
 string download_layers_progress
@@ -409,6 +434,7 @@ string drop_marker_at_poi
 string drop_marker_button_desc
 string dropdownBtn
 string emergency
+string enter_view_name
 string example_footer
 string example_header
 string example_layer_description
@@ -425,6 +451,8 @@ string hello_world
 string hide_dropdown
 string hide_dropdown_desc
 string hookNavigation
+string hotkey_assigned
+string hotkey_cleared
 string imageAttach
 string importFile
 string increase_radius
@@ -447,11 +475,13 @@ string map_screenshot_desc
 string map_screenshot_finished
 string map_screenshot_started
 string marker_type
+string max_views_reached
 string mgrs
 string modify_buttons
 string my_location
 string navigate_button_desc
 string navigate_to_poi
+string navigating_to_view
 string nearby_search_error
 string no_categories_selected
 string no_category_results
@@ -460,9 +490,12 @@ string no_mobile_imagery_found
 string no_nearby_results
 string no_results
 string no_results_selected
+string no_saved_views
+string none
 string notificationSpammer
 string notificationWithOptions
 string offline_data_button
+string ok
 string overlayViewBtn
 string perform_add
 string perform_edit
@@ -523,7 +556,10 @@ string reXRoute
 string recyclerViewBtn
 string removeStream
 string remove_history_item_desc
+string rename_view
 string route_exporter_name
+string save_view
+string save_view_hint
 string search
 string search_error
 string search_hint
@@ -538,6 +574,7 @@ string section_nearby_results
 string section_recent
 string select_all
 string select_categories
+string select_hotkey
 string select_poi_categories
 string sendFile
 string sensorFOV
@@ -567,6 +604,7 @@ string svgMarker
 string tabViewBtn
 string tab_address
 string tab_nearby
+string tab_views
 string tap_on_mic
 string tap_to_speak_marker_type
 string tap_to_speak_mgrs
@@ -576,6 +614,11 @@ string toolbar_handled
 string unable_to_determine_location
 string versionName
 string videoLauncher
+string view_deleted
+string view_renamed
+string view_saved
+string view_thumbnail_desc
+string views_header
 string webView
 style ATAKEditText
 style ATAKPluginTheme

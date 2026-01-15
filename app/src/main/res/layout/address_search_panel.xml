@@ -51,6 +51,19 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:paddingHorizontal="8dp" />
 
+            <!-- Views Tab -->
+            <TextView
+                android:id="@+id/tab_views"
+                android:layout_width="0dp"
+                android:layout_height="20dp"
+                android:layout_weight="1"
+                android:text="@string/tab_views"
+                android:textColor="#888888"
+                android:textSize="11sp"
+                android:gravity="center"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingHorizontal="8dp" />
+
         </LinearLayout>
 
         <!-- Close panel button -->
@@ -83,6 +96,13 @@
 
         <View
             android:id="@+id/tab_indicator_nearby"
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent" />
+
+        <View
+            android:id="@+id/tab_indicator_views"
             android:layout_width="0dp"
             android:layout_height="2dp"
             android:layout_weight="1"
@@ -279,16 +299,22 @@
         <!-- ============ NEARBY TAB CONTENT (index 1) ============ -->
         <include layout="@layout/nearby_search_content" />
 
+        <!-- ============ VIEWS TAB CONTENT (index 2) ============ -->
+        <include layout="@layout/views_content" />
+
     </ViewFlipper>
 
     <!-- Footer -->
     <TextView
+        android:id="@+id/powered_by_gotak"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/powered_by_gotak"
         android:textColor="#555555"
         android:textSize="10sp"
         android:gravity="center"
-        android:paddingVertical="8dp" />
+        android:paddingVertical="8dp"
+        android:clickable="true"
+        android:focusable="true" />
 
 </LinearLayout>

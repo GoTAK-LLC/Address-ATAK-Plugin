@@ -427,6 +427,7 @@
     <string name="alt_buttons">Alternate</string>
     <string name="app_desc">Address search plugin with Nominatim geocoding</string>
     <string name="app_name">Address</string>
+    <string name="assign_hotkey">Assign hotkey</string>
     <string name="associations">Demonstrate the proper way to add two map items and an association</string>
     <string name="bad_things">bad things will happen because this plugin does not have the right permissions.   Please unload and reload the plugins and provide the correct permissions.</string>
     <string name="broadcast">Broadcast</string>
@@ -435,7 +436,9 @@
     <string name="broadcast_yes">Yes, Broadcast</string>
     <string name="bumpControl">Demonstrates how to use the accelerometer</string>
     <string name="cameraLauncher">Launch the camera</string>
+    <string name="cancel">Cancel</string>
     <string name="cancel_btn">Cancel</string>
+    <string name="capturing_view">Capturing view…</string>
     <string name="categories">Categories</string>
     <string name="clear_all">Clear All</string>
     <string name="clear_button_desc">Clear search text</string>
@@ -448,6 +451,9 @@
     <string name="customType">Create a custom type of marker</string>
     <string name="decrease_radius">Decrease radius</string>
     <string name="default_buttons">Default</string>
+    <string name="delete">Delete</string>
+    <string name="delete_view">Delete view</string>
+    <string name="delete_view_confirm">Delete this view?</string>
     <string name="deselect_all">Deselect All</string>
     <string name="documentation">Documentation</string>
     <string name="download_layers_progress">%s layers</string>
@@ -461,6 +467,7 @@
     <string name="drop_marker_button_desc">Drop a marker at this location</string>
     <string name="dropdownBtn">Show a sample dropdown view</string>
     <string name="emergency">Create an emergency 911 alert</string>
+    <string name="enter_view_name">Enter view name</string>
     <string name="example_footer">Footer Example</string>
     <string name="example_header">Header Example</string>
     <string name="example_layer_description">This is an example layer.</string>
@@ -477,6 +484,8 @@
     <string name="hide_dropdown">Hide</string>
     <string name="hide_dropdown_desc">Hide the dropdown from within the NavstackItem</string>
     <string name="hookNavigation">A simple example that hooks into navigation events and toasts events pertaining to navigation.</string>
+    <string name="hotkey_assigned">Hotkey %d assigned</string>
+    <string name="hotkey_cleared">Hotkey cleared</string>
     <string name="imageAttach">Create a marker with an attached image</string>
     <string name="importFile">Demonstrate how to import a sample file.</string>
     <string name="increase_radius">Increase radius</string>
@@ -499,11 +508,13 @@
     <string name="map_screenshot_finished">Finished capturing map screenshot to %s</string>
     <string name="map_screenshot_started">Capturing map screenshot…</string>
     <string name="marker_type">Marker Type</string>
+    <string name="max_views_reached">Maximum views reached (50)</string>
     <string name="mgrs">MGRS Coordinates</string>
     <string name="modify_buttons">Update the toolbar buttons based on a mode flag</string>
     <string name="my_location">My Loc</string>
     <string name="navigate_button_desc">Navigate with Bloodhound</string>
     <string name="navigate_to_poi">Navigate to POI</string>
+    <string name="navigating_to_view">Navigating to view…</string>
     <string name="nearby_search_error">Nearby search error</string>
     <string name="no_categories_selected">No categories selected</string>
     <string name="no_category_results">No %1$s found nearby</string>
@@ -512,9 +523,12 @@
     <string name="no_nearby_results">No nearby POIs found</string>
     <string name="no_results">No results found</string>
     <string name="no_results_selected">No results selected</string>
+    <string name="no_saved_views">No saved views</string>
+    <string name="none">None</string>
     <string name="notificationSpammer">Spam android notifications</string>
     <string name="notificationWithOptions">Shows how to produce a notification with buttons</string>
     <string name="offline_data_button">Offline Data</string>
+    <string name="ok">OK</string>
     <string name="overlayViewBtn">Show a sample overlay view</string>
     <string name="perform_add">Performing Add</string>
     <string name="perform_edit">Performing Edit</string>
@@ -575,7 +589,10 @@
     <string name="recyclerViewBtn">Show a sample recycler view</string>
     <string name="removeStream">Remove the content stream</string>
     <string name="remove_history_item_desc">Remove from history</string>
+    <string name="rename_view">Rename view</string>
     <string name="route_exporter_name">Hello World Route Exporter</string>
+    <string name="save_view">Save View</string>
+    <string name="save_view_hint">Tap \"Save View\" to capture your current map position</string>
     <string name="search">Search</string>
     <string name="search_error">Search error</string>
     <string name="search_hint">Search for a location...</string>
@@ -590,6 +607,7 @@
     <string name="section_recent">Recent</string>
     <string name="select_all">Select All</string>
     <string name="select_categories">Select Categories</string>
+    <string name="select_hotkey">Select hotkey (1-9)</string>
     <string name="select_poi_categories">Select POI Categories</string>
     <string name="sendFile">Demonstrate how to send a sample file.</string>
     <string name="sensorFOV">Demonstrates how to plot a sensor Field of View</string>
@@ -619,6 +637,7 @@
     <string name="tabViewBtn">Show a sample tab view</string>
     <string name="tab_address">Search</string>
     <string name="tab_nearby">Nearby</string>
+    <string name="tab_views">Views</string>
     <string name="tap_on_mic">Tap on mic to speak</string>
     <string name="tap_to_speak_marker_type">Tap to state the Marker Type</string>
     <string name="tap_to_speak_mgrs">Tap to state the MGRS Coordinates</string>
@@ -626,8 +645,13 @@
     <string name="toolbar_buttons">ToolbarButtons</string>
     <string name="toolbar_handled">Toolbar title and button styling is handled by the NavigationStackView</string>
     <string name="unable_to_determine_location">Unable to determine your location</string>
-    <string name="versionName" translatable="false">1.1.0 (edd7da2f) - [5.2.0]</string>
+    <string name="versionName" translatable="false">1.1.0 (b261ea8e) - [5.2.0]</string>
     <string name="videoLauncher">Example of how to display a video with an overlay layer</string>
+    <string name="view_deleted">View deleted</string>
+    <string name="view_renamed">View renamed</string>
+    <string name="view_saved">View saved</string>
+    <string name="view_thumbnail_desc">View thumbnail</string>
+    <string name="views_header">Saved Views</string>
     <string name="webView">Demonstrate how to launch a plugin with a web view.</string>
     <style name="ATAKEditText" parent="@android:style/Widget.EditText">
         

@@ -3,6 +3,14 @@
     package="com.gotak.address.plugin"
     tools:ignore="GoogleAppIndexingWarning">
 
+    <!-- Query ATAK packages for URI navigation (Android 11+) -->
+    <queries>
+        <package android:name="com.atakmap.app.civ" />
+        <package android:name="com.atakmap.app" />
+        <package android:name="com.atakmap.app.mil" />
+        <package android:name="com.atakmap.app.gov" />
+    </queries>
+
     <!-- USB Host feature for RIDAR device communication -->
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
     
@@ -67,6 +75,21 @@
        <activity android:name="com.gotak.address.PluginPermissionActivity"
            android:exported="true"
            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+       <!-- View Navigation Activity - handles addressview:// URI scheme
+            Allows external apps, browsers, QR codes to navigate ATAK to specific positions
+            Example: addressview://navigate?lat=40.7128&lon=-74.006&zoom=15&tilt=45&rotation=90 -->
+       <activity android:name="com.gotak.address.ViewNavigationActivity"
+           android:exported="true"
+           android:theme="@android:style/Theme.Translucent.NoTitleBar"
+           android:launchMode="singleTask">
+           <intent-filter>
+               <action android:name="android.intent.action.VIEW" />
+               <category android:name="android.intent.category.DEFAULT" />
+               <category android:name="android.intent.category.BROWSABLE" />
+               <data android:scheme="addressview" />
+           </intent-filter>
+       </activity>
 
     </application>
 

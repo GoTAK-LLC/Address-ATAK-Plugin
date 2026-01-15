@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Handler;
@@ -40,6 +41,9 @@ import com.gotak.address.search.nearby.NearbyResultsAdapter;
 import com.gotak.address.search.nearby.OverpassApiClient;
 import com.gotak.address.search.nearby.OverpassSearchResult;
 import com.gotak.address.search.nearby.PointOfInterestType;
+import com.gotak.address.search.views.SavedView;
+import com.gotak.address.search.views.ViewsAdapter;
+import com.gotak.address.search.views.ViewsManager;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.cot.CotMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
@@ -72,6 +76,21 @@ public class AddressSearchDropDown extends DropDownReceiver implements
     public static final String TAG = "AddressSearchDropDown";
     public static final String SHOW_SEARCH = "com.gotak.address.SHOW_ADDRESS_SEARCH";
     public static final String HIDE_SEARCH = "com.gotak.address.HIDE_ADDRESS_SEARCH";
+    public static final String NAVIGATE_TO_VIEW = "com.gotak.address.NAVIGATE_TO_VIEW";
+    public static final String NAVIGATE_TO_POSITION = "com.gotak.address.NAVIGATE_TO_POSITION";
+    
+    // Intent extras for NAVIGATE_TO_VIEW
+    public static final String EXTRA_VIEW_ID = "view_id";
+    public static final String EXTRA_VIEW_NAME = "view_name";
+    
+    // Intent extras for NAVIGATE_TO_POSITION
+    public static final String EXTRA_LATITUDE = "latitude";      // double, required
+    public static final String EXTRA_LONGITUDE = "longitude";    // double, required
+    public static final String EXTRA_SCALE = "scale";            // double, map scale (meters/pixel)
+    public static final String EXTRA_ZOOM = "zoom";              // double, zoom level (0-21+), alternative to scale
+    public static final String EXTRA_TILT = "tilt";              // double, 0-90 degrees
+    public static final String EXTRA_ROTATION = "rotation";      // double, 0-360 degrees (heading)
+    public static final String EXTRA_ALTITUDE = "altitude";      // double, altitude in meters
 
     private static final long DEBOUNCE_DELAY_MS = 300;
     private static final int MIN_QUERY_LENGTH = 2;
@@ -98,8 +117,10 @@ public class AddressSearchDropDown extends DropDownReceiver implements
     // Tab UI elements
     private TextView tabAddress;
     private TextView tabNearby;
+    private TextView tabViews;
     private View tabIndicatorAddress;
     private View tabIndicatorNearby;
+    private View tabIndicatorViews;
 
     // Address Tab UI elements
     private EditText searchInput;
@@ -133,8 +154,15 @@ public class AddressSearchDropDown extends DropDownReceiver implements
     private CheckBox broadcastCheckbox;
     private NearbyResultsAdapter nearbyResultsAdapter;
 
+    // Views Tab UI elements
+    private Button viewsSaveButton;
+    private LinearLayout viewsEmptyState;
+    private RecyclerView viewsRecyclerView;
+    private ViewsAdapter viewsAdapter;
+    private ViewsManager viewsManager;
+
     // State
-    private int currentTab = 0; // 0 = Address, 1 = Nearby
+    private int currentTab = 0; // 0 = Address, 1 = Nearby, 2 = Views
     private Set<PointOfInterestType> selectedCategories = new HashSet<>();
     private int radiusIndex = 2; // Default to 5km
     private boolean useMapCenter = false; // false = My Location, true = Map Center
@@ -205,6 +233,12 @@ public class AddressSearchDropDown extends DropDownReceiver implements
             case HIDE_SEARCH:
                 closeDropDown();
                 break;
+            case NAVIGATE_TO_VIEW:
+                handleNavigateToViewIntent(intent);
+                break;
+            case NAVIGATE_TO_POSITION:
+                handleNavigateToPositionIntent(intent);
+                break;
         }
     }
 
@@ -219,12 +253,15 @@ public class AddressSearchDropDown extends DropDownReceiver implements
             closeButton = rootView.findViewById(R.id.close_button);
             tabAddress = rootView.findViewById(R.id.tab_address);
             tabNearby = rootView.findViewById(R.id.tab_nearby);
+            tabViews = rootView.findViewById(R.id.tab_views);
             tabIndicatorAddress = rootView.findViewById(R.id.tab_indicator_address);
             tabIndicatorNearby = rootView.findViewById(R.id.tab_indicator_nearby);
+            tabIndicatorViews = rootView.findViewById(R.id.tab_indicator_views);
 
             // Setup tab click listeners
             tabAddress.setOnClickListener(v -> switchToTab(0));
             tabNearby.setOnClickListener(v -> switchToTab(1));
+            tabViews.setOnClickListener(v -> switchToTab(2));
 
             // Setup close button
             closeButton.setOnClickListener(v -> {
@@ -233,11 +270,28 @@ public class AddressSearchDropDown extends DropDownReceiver implements
                 closeDropDown();
             });
 
+            // Setup Powered by GoTAK link
+            TextView poweredByGotak = rootView.findViewById(R.id.powered_by_gotak);
+            if (poweredByGotak != null) {
+                poweredByGotak.setOnClickListener(v -> {
+                    try {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://getgotak.com"));
+                        browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        pluginContext.startActivity(browserIntent);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error opening GoTAK website: " + e.getMessage(), e);
+                    }
+                });
+            }
+
             // Setup Address Tab
             setupAddressTab();
 
             // Setup Nearby Tab
             setupNearbyTab();
+
+            // Setup Views Tab
+            setupViewsTab();
 
             // Ensure correct tab is shown
             switchToTab(currentTab);
@@ -276,21 +330,42 @@ public class AddressSearchDropDown extends DropDownReceiver implements
         currentTab = tabIndex;
         tabFlipper.setDisplayedChild(tabIndex);
 
-        // Update tab appearance
-        if (tabIndex == 0) {
-            tabAddress.setTextColor(Color.parseColor("#00BCD4"));
-            tabAddress.setTypeface(null, android.graphics.Typeface.BOLD);
-            tabNearby.setTextColor(Color.parseColor("#888888"));
-            tabNearby.setTypeface(null, android.graphics.Typeface.NORMAL);
-            tabIndicatorAddress.setBackgroundColor(Color.parseColor("#00BCD4"));
-            tabIndicatorNearby.setBackgroundColor(Color.TRANSPARENT);
-        } else {
-            tabNearby.setTextColor(Color.parseColor("#00BCD4"));
-            tabNearby.setTypeface(null, android.graphics.Typeface.BOLD);
-            tabAddress.setTextColor(Color.parseColor("#888888"));
-            tabAddress.setTypeface(null, android.graphics.Typeface.NORMAL);
-            tabIndicatorNearby.setBackgroundColor(Color.parseColor("#00BCD4"));
-            tabIndicatorAddress.setBackgroundColor(Color.TRANSPARENT);
+        // Reset all tabs to inactive state
+        int inactiveColor = Color.parseColor("#888888");
+        int activeColor = Color.parseColor("#00BCD4");
+        
+        tabAddress.setTextColor(inactiveColor);
+        tabAddress.setTypeface(null, android.graphics.Typeface.NORMAL);
+        tabNearby.setTextColor(inactiveColor);
+        tabNearby.setTypeface(null, android.graphics.Typeface.NORMAL);
+        tabViews.setTextColor(inactiveColor);
+        tabViews.setTypeface(null, android.graphics.Typeface.NORMAL);
+        
+        tabIndicatorAddress.setBackgroundColor(Color.TRANSPARENT);
+        tabIndicatorNearby.setBackgroundColor(Color.TRANSPARENT);
+        tabIndicatorViews.setBackgroundColor(Color.TRANSPARENT);
+
+        // Activate the selected tab
+        switch (tabIndex) {
+            case 0:
+                tabAddress.setTextColor(activeColor);
+                tabAddress.setTypeface(null, android.graphics.Typeface.BOLD);
+                tabIndicatorAddress.setBackgroundColor(activeColor);
+                break;
+            case 1:
+                tabNearby.setTextColor(activeColor);
+                tabNearby.setTypeface(null, android.graphics.Typeface.BOLD);
+                tabIndicatorNearby.setBackgroundColor(activeColor);
+                break;
+            case 2:
+                tabViews.setTextColor(activeColor);
+                tabViews.setTypeface(null, android.graphics.Typeface.BOLD);
+                tabIndicatorViews.setBackgroundColor(activeColor);
+                // Refresh views list when switching to Views tab
+                if (viewsManager != null) {
+                    refreshViewsList();
+                }
+                break;
         }
 
         // Hide keyboard when switching tabs
@@ -409,6 +484,626 @@ public class AddressSearchDropDown extends DropDownReceiver implements
 
         // Setup search button
         nearbySearchButton.setOnClickListener(v -> performNearbySearch());
+    }
+
+    private void setupViewsTab() {
+        // Initialize ViewsManager
+        viewsManager = new ViewsManager(pluginContext);
+        
+        // Find Views tab views
+        viewsSaveButton = rootView.findViewById(R.id.views_save_button);
+        viewsEmptyState = rootView.findViewById(R.id.views_empty_state);
+        viewsRecyclerView = rootView.findViewById(R.id.views_list);
+        
+        // Setup RecyclerView
+        viewsAdapter = new ViewsAdapter(pluginContext, new ViewsAdapter.ViewActionListener() {
+            @Override
+            public void onViewClick(SavedView view) {
+                navigateToSavedView(view);
+            }
+            
+            @Override
+            public void onRenameClick(SavedView view) {
+                showRenameDialog(view);
+            }
+            
+            @Override
+            public void onDeleteClick(SavedView view) {
+                showDeleteConfirmation(view);
+            }
+            
+            @Override
+            public void onViewsMoved(int fromPosition, int toPosition) {
+                // Persist the new order
+                viewsManager.moveView(fromPosition, toPosition);
+            }
+        });
+        // Use 2-column grid for square thumbnails
+        viewsRecyclerView.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(pluginContext, 2));
+        viewsRecyclerView.setAdapter(viewsAdapter);
+        
+        // Setup drag-and-drop reordering
+        setupViewsDragDrop();
+        
+        // Setup save button
+        viewsSaveButton.setOnClickListener(v -> saveCurrentView());
+        
+        // Load initial views
+        refreshViewsList();
+    }
+    
+    /**
+     * Setup drag-and-drop for reordering view tiles.
+     */
+    private void setupViewsDragDrop() {
+        androidx.recyclerview.widget.ItemTouchHelper.Callback callback = 
+            new androidx.recyclerview.widget.ItemTouchHelper.Callback() {
+            
+            @Override
+            public int getMovementFlags(@androidx.annotation.NonNull RecyclerView recyclerView,
+                                        @androidx.annotation.NonNull RecyclerView.ViewHolder viewHolder) {
+                // Allow drag in all directions for grid layout
+                int dragFlags = androidx.recyclerview.widget.ItemTouchHelper.UP | 
+                               androidx.recyclerview.widget.ItemTouchHelper.DOWN |
+                               androidx.recyclerview.widget.ItemTouchHelper.LEFT | 
+                               androidx.recyclerview.widget.ItemTouchHelper.RIGHT;
+                return makeMovementFlags(dragFlags, 0); // No swipe
+            }
+            
+            @Override
+            public boolean onMove(@androidx.annotation.NonNull RecyclerView recyclerView,
+                                 @androidx.annotation.NonNull RecyclerView.ViewHolder source,
+                                 @androidx.annotation.NonNull RecyclerView.ViewHolder target) {
+                int fromPos = source.getAdapterPosition();
+                int toPos = target.getAdapterPosition();
+                
+                if (fromPos != RecyclerView.NO_POSITION && toPos != RecyclerView.NO_POSITION) {
+                    viewsAdapter.moveItem(fromPos, toPos);
+                    return true;
+                }
+                return false;
+            }
+            
+            @Override
+            public void onSwiped(@androidx.annotation.NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                // Swipe disabled
+            }
+            
+            @Override
+            public boolean isLongPressDragEnabled() {
+                // Enable drag on long press
+                return true;
+            }
+            
+            @Override
+            public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+                super.onSelectedChanged(viewHolder, actionState);
+                
+                if (actionState == androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_DRAG) {
+                    // Highlight the dragged item
+                    if (viewHolder != null && viewHolder.itemView != null) {
+                        viewHolder.itemView.setAlpha(0.8f);
+                        viewHolder.itemView.setScaleX(1.05f);
+                        viewHolder.itemView.setScaleY(1.05f);
+                    }
+                }
+            }
+            
+            @Override
+            public void clearView(@androidx.annotation.NonNull RecyclerView recyclerView,
+                                 @androidx.annotation.NonNull RecyclerView.ViewHolder viewHolder) {
+                super.clearView(recyclerView, viewHolder);
+                
+                // Reset visual state after drag
+                viewHolder.itemView.setAlpha(1.0f);
+                viewHolder.itemView.setScaleX(1.0f);
+                viewHolder.itemView.setScaleY(1.0f);
+            }
+        };
+        
+        androidx.recyclerview.widget.ItemTouchHelper touchHelper = 
+            new androidx.recyclerview.widget.ItemTouchHelper(callback);
+        touchHelper.attachToRecyclerView(viewsRecyclerView);
+    }
+    
+    private void refreshViewsList() {
+        List<SavedView> views = viewsManager.getViews();
+        viewsAdapter.setViews(views);
+        
+        // Show/hide empty state
+        if (views.isEmpty()) {
+            viewsEmptyState.setVisibility(View.VISIBLE);
+            viewsRecyclerView.setVisibility(View.GONE);
+        } else {
+            viewsEmptyState.setVisibility(View.GONE);
+            viewsRecyclerView.setVisibility(View.VISIBLE);
+        }
+    }
+    
+    /**
+     * Save the current map view.
+     */
+    private void saveCurrentView() {
+        if (!viewsManager.canAddView()) {
+            android.widget.Toast.makeText(pluginContext, 
+                R.string.max_views_reached, android.widget.Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Show progress
+        android.widget.Toast.makeText(pluginContext, 
+            R.string.capturing_view, android.widget.Toast.LENGTH_SHORT).show();
+        
+        // Capture map state on main thread first (required for map methods)
+        final GeoPoint center = getMapView().getCenterPoint().get();
+        if (center == null || !center.isValid()) {
+            android.widget.Toast.makeText(pluginContext, 
+                "Unable to capture view", android.widget.Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        final double lat = center.getLatitude();
+        final double lon = center.getLongitude();
+        // Store the raw map scale - we'll use it directly when restoring
+        final double mapScale = getMapView().getMapScale();
+        Log.d(TAG, "Saving view: mapScale=" + mapScale);
+        final double altitude = center.getAltitude();
+        
+        // Get 3D state (tilt and rotation)
+        double tiltVal = 0;
+        double rotationVal = 0;
+        boolean is3DVal = false;
+        
+        try {
+            tiltVal = getMapView().getMapTilt();
+            rotationVal = getMapView().getMapRotation();
+            is3DVal = tiltVal > 0.1;
+            Log.i(TAG, "Captured 3D state: tilt=" + tiltVal + ", rotation=" + rotationVal + ", is3D=" + is3DVal);
+        } catch (Exception e) {
+            Log.e(TAG, "Could not get 3D state: " + e.getMessage(), e);
+        }
+        
+        final double tilt = tiltVal;
+        final double rotation = rotationVal;
+        final boolean is3D = is3DVal;
+        
+        Log.i(TAG, "Saving view with: lat=" + lat + ", lon=" + lon + 
+              ", mapScale=" + mapScale + ", tilt=" + tilt + ", rotation=" + rotation);
+        
+        // Capture thumbnail using ATAK's capture mechanism
+        final Bitmap thumbnail = captureMapThumbnail();
+        
+        // Do geocoding on background thread
+        new Thread(() -> {
+            try {
+                String address = geocodeLocation(lat, lon);
+                String name = viewsManager.generateDefaultName();
+                
+                // Create the view - store raw mapScale for exact restoration
+                SavedView view = SavedView.capture(name, lat, lon, mapScale, 
+                    altitude, tilt, rotation, is3D, thumbnail, address);
+                
+                Log.i(TAG, "Created SavedView: " + view.toString() + 
+                      " zoom=" + view.getZoom() + " tilt=" + view.getTilt() + " rot=" + view.getRotation());
+                
+                mainHandler.post(() -> {
+                    viewsManager.addView(view);
+                    refreshViewsList();
+                    android.widget.Toast.makeText(pluginContext, 
+                        R.string.view_saved, android.widget.Toast.LENGTH_SHORT).show();
+                });
+                
+            } catch (Exception e) {
+                Log.e(TAG, "Error saving view: " + e.getMessage(), e);
+                mainHandler.post(() -> android.widget.Toast.makeText(pluginContext, 
+                    "Error saving view", android.widget.Toast.LENGTH_SHORT).show());
+            }
+        }, "SaveViewThread").start();
+    }
+    
+    /**
+     * Capture a thumbnail of the current map view.
+     * Uses ATAK's GLMapView capture if available.
+     */
+    private Bitmap captureMapThumbnail() {
+        try {
+            // Get dimensions from the MapView
+            int width = getMapView().getWidth();
+            int height = getMapView().getHeight();
+            
+            if (width <= 0 || height <= 0) {
+                Log.d(TAG, "Invalid map dimensions for thumbnail");
+                return null;
+            }
+            
+            // Try to get a screenshot from ATAK's map renderer
+            com.atakmap.map.opengl.GLMapView glMapView = getMapView().getGLSurface().getGLMapView();
+            if (glMapView != null) {
+                // Request a capture - this happens on the GL thread
+                final Bitmap[] result = new Bitmap[1];
+                final Object lock = new Object();
+                final int w = width;
+                final int h = height;
+                
+                glMapView.queueEvent(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (w > 0 && h > 0) {
+                                // Read pixels from OpenGL
+                                int[] pixels = new int[w * h];
+                                java.nio.IntBuffer buffer = java.nio.IntBuffer.wrap(pixels);
+                                buffer.position(0);
+                                
+                                android.opengl.GLES20.glReadPixels(0, 0, w, h,
+                                        android.opengl.GLES20.GL_RGBA, 
+                                        android.opengl.GLES20.GL_UNSIGNED_BYTE, buffer);
+                                
+                                // Convert RGBA to ARGB and flip vertically
+                                Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                                for (int y = 0; y < h; y++) {
+                                    for (int x = 0; x < w; x++) {
+                                        int pixel = pixels[(h - 1 - y) * w + x];
+                                        // RGBA to ARGB
+                                        int r = (pixel) & 0xFF;
+                                        int g = (pixel >> 8) & 0xFF;
+                                        int b = (pixel >> 16) & 0xFF;
+                                        int a = (pixel >> 24) & 0xFF;
+                                        bitmap.setPixel(x, y, (a << 24) | (r << 16) | (g << 8) | b);
+                                    }
+                                }
+                                
+                                // Scale down to square thumbnail for grid display
+                                // Crop to center square first, then scale to 400x400
+                                int size = Math.min(w, h);
+                                int xOffset = (w - size) / 2;
+                                int yOffset = (h - size) / 2;
+                                Bitmap cropped = Bitmap.createBitmap(bitmap, xOffset, yOffset, size, size);
+                                result[0] = Bitmap.createScaledBitmap(cropped, 400, 400, true);
+                                if (cropped != bitmap) {
+                                    cropped.recycle();
+                                }
+                                bitmap.recycle();
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "GL capture error: " + e.getMessage());
+                        } finally {
+                            synchronized (lock) {
+                                lock.notifyAll();
+                            }
+                        }
+                    }
+                });
+                
+                // Wait for GL thread (with timeout)
+                synchronized (lock) {
+                    lock.wait(3000);
+                }
+                
+                if (result[0] != null) {
+                    return result[0];
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error capturing thumbnail: " + e.getMessage(), e);
+        }
+        
+        // Return null if capture failed - adapter will show placeholder
+        return null;
+    }
+    
+    /**
+     * Geocode a location to get an address string.
+     */
+    private String geocodeLocation(double lat, double lon) {
+        try {
+            // Use ATAK's geocoder if available
+            com.atakmap.android.user.geocode.GeocodeManager geocodeManager = 
+                com.atakmap.android.user.geocode.GeocodeManager.getInstance(getMapView().getContext());
+            com.atakmap.android.user.geocode.GeocodeManager.Geocoder geocoder = geocodeManager.getSelectedGeocoder();
+            
+            if (geocoder != null && geocoder.testServiceAvailable()) {
+                GeoPoint point = new GeoPoint(lat, lon);
+                java.util.List<android.location.Address> addresses = geocoder.getLocation(point);
+                
+                if (addresses != null && !addresses.isEmpty()) {
+                    android.location.Address addr = addresses.get(0);
+                    StringBuilder sb = new StringBuilder();
+                    
+                    // Build full address - street number and name first
+                    String streetAddress = addr.getAddressLine(0);
+                    if (streetAddress != null && !streetAddress.isEmpty()) {
+                        // Use the first address line which typically has the full address
+                        return streetAddress;
+                    }
+                    
+                    // Fallback: build address from components
+                    if (addr.getSubThoroughfare() != null) {
+                        sb.append(addr.getSubThoroughfare()).append(" ");
+                    }
+                    if (addr.getThoroughfare() != null) {
+                        sb.append(addr.getThoroughfare());
+                    }
+                    if (addr.getLocality() != null) {
+                        if (sb.length() > 0) sb.append(", ");
+                        sb.append(addr.getLocality());
+                    } else if (addr.getSubAdminArea() != null) {
+                        if (sb.length() > 0) sb.append(", ");
+                        sb.append(addr.getSubAdminArea());
+                    }
+                    if (addr.getAdminArea() != null) {
+                        if (sb.length() > 0) sb.append(", ");
+                        sb.append(addr.getAdminArea());
+                    }
+                    
+                    return sb.length() > 0 ? sb.toString() : null;
+                }
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Geocoding failed: " + e.getMessage());
+        }
+        return null;
+    }
+    
+    /**
+     * Navigate to a saved view.
+     */
+    private void navigateToSavedView(SavedView view) {
+        double mapScale = view.getZoom();
+        double tilt = view.getTilt();
+        
+        // Normalize rotation to 0-360 range (ATAK reports cumulative rotation)
+        double rotation = view.getRotation() % 360.0;
+        if (rotation < 0) rotation += 360.0;
+        
+        Log.i(TAG, "Navigating to saved view: " + view.getName() + 
+              " at " + view.getLatitude() + ", " + view.getLongitude() + 
+              " mapScale=" + mapScale + " tilt=" + tilt + " rotation=" + rotation);
+        
+        android.widget.Toast.makeText(pluginContext, 
+            R.string.navigating_to_view, android.widget.Toast.LENGTH_SHORT).show();
+        
+        GeoPoint point = new GeoPoint(view.getLatitude(), view.getLongitude());
+        
+        // Use MapController methods which are more reliable for camera control
+        try {
+            // First set rotation (do this before pan/zoom to avoid camera fighting)
+            getMapView().getMapController().rotateTo(rotation, false);
+            Log.d(TAG, "Rotation applied: " + rotation);
+            
+            // Set tilt for 3D views
+            if (view.is3DMode() || tilt > 0.1) {
+                getMapView().getMapController().tiltTo(tilt, false);
+                Log.d(TAG, "Tilt applied: " + tilt);
+            } else {
+                getMapView().getMapController().tiltTo(0, false);
+            }
+            
+            // Pan to location
+            getMapView().getMapController().panTo(point, false);
+            Log.d(TAG, "Pan applied: " + point);
+            
+            // Set scale directly on the map view
+            // This is more reliable than panZoomTo for exact scale restoration
+            getMapView().getMapController().zoomTo(mapScale, false);
+            Log.d(TAG, "Scale applied via zoomTo: " + mapScale);
+            
+            // Verify the scale was set
+            double actualScale = getMapView().getMapScale();
+            Log.d(TAG, "Requested scale=" + mapScale + ", actual scale=" + actualScale);
+            
+            // If scale is significantly off, log warning
+            if (Math.abs(actualScale - mapScale) / mapScale > 0.1) {
+                Log.w(TAG, "Scale mismatch: requested=" + mapScale + " actual=" + actualScale + 
+                    " (this may be due to tilt affecting scale calculation)");
+            }
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Navigation failed: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Handle NAVIGATE_TO_VIEW intent from external sources.
+     * Supports navigation by view_id or view_name.
+     * 
+     * Usage from other plugins/apps:
+     *   Intent intent = new Intent("com.gotak.address.NAVIGATE_TO_VIEW");
+     *   intent.putExtra("view_id", "your-view-uuid");  // OR
+     *   intent.putExtra("view_name", "My Saved View");
+     *   AtakBroadcast.getInstance().sendBroadcast(intent);
+     */
+    private void handleNavigateToViewIntent(Intent intent) {
+        // Ensure ViewsManager is initialized
+        if (viewsManager == null) {
+            viewsManager = new ViewsManager(pluginContext);
+        }
+        
+        String viewId = intent.getStringExtra(EXTRA_VIEW_ID);
+        String viewName = intent.getStringExtra(EXTRA_VIEW_NAME);
+        
+        Log.i(TAG, "NAVIGATE_TO_VIEW intent received: id=" + viewId + ", name=" + viewName);
+        
+        SavedView targetView = null;
+        
+        // Try to find by ID first
+        if (viewId != null && !viewId.isEmpty()) {
+            targetView = viewsManager.getViewById(viewId);
+        }
+        
+        // Fall back to name search
+        if (targetView == null && viewName != null && !viewName.isEmpty()) {
+            for (SavedView view : viewsManager.getViews()) {
+                if (view.getName().equalsIgnoreCase(viewName)) {
+                    targetView = view;
+                    break;
+                }
+            }
+        }
+        
+        if (targetView != null) {
+            Log.i(TAG, "Navigating to view: " + targetView.getName());
+            navigateToSavedView(targetView);
+        } else {
+            Log.w(TAG, "View not found for id=" + viewId + ", name=" + viewName);
+            android.widget.Toast.makeText(pluginContext, 
+                "View not found", android.widget.Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * Handle NAVIGATE_TO_POSITION intent - navigate to arbitrary map position.
+     * 
+     * Required extras:
+     *   latitude (double) - Latitude in degrees
+     *   longitude (double) - Longitude in degrees
+     * 
+     * Optional extras:
+     *   scale (double) - Map scale in meters/pixel (e.g., 0.0001 for close zoom)
+     *   zoom (double) - Zoom level 0-21+ (alternative to scale, will be converted)
+     *   tilt (double) - Camera tilt 0-90 degrees (0=top-down, 90=horizon)
+     *   rotation (double) - Camera heading 0-360 degrees (0=north)
+     *   altitude (double) - Altitude in meters (for GeoPoint)
+     * 
+     * Usage:
+     *   Intent intent = new Intent("com.gotak.address.NAVIGATE_TO_POSITION");
+     *   intent.putExtra("latitude", 40.7128);
+     *   intent.putExtra("longitude", -74.0060);
+     *   intent.putExtra("zoom", 15.0);
+     *   intent.putExtra("tilt", 45.0);
+     *   intent.putExtra("rotation", 90.0);
+     *   AtakBroadcast.getInstance().sendBroadcast(intent);
+     * 
+     * ADB example:
+     *   adb shell am broadcast -a com.gotak.address.NAVIGATE_TO_POSITION \
+     *     --ef latitude 40.7128 --ef longitude -74.0060 --ef zoom 15 --ef tilt 45 --ef rotation 90
+     */
+    private void handleNavigateToPositionIntent(Intent intent) {
+        // Get required parameters
+        if (!intent.hasExtra(EXTRA_LATITUDE) || !intent.hasExtra(EXTRA_LONGITUDE)) {
+            Log.e(TAG, "NAVIGATE_TO_POSITION requires latitude and longitude extras");
+            android.widget.Toast.makeText(pluginContext, 
+                "Missing latitude/longitude", android.widget.Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        double latitude = intent.getDoubleExtra(EXTRA_LATITUDE, 0);
+        double longitude = intent.getDoubleExtra(EXTRA_LONGITUDE, 0);
+        
+        // Get optional parameters with defaults from current map state
+        double currentScale = getMapView().getMapScale();
+        double currentTilt = 0;
+        double currentRotation = 0;
+        try {
+            currentTilt = getMapView().getMapTilt();
+            currentRotation = getMapView().getMapRotation();
+        } catch (Exception e) {
+            // Ignore if 3D state not available
+        }
+        
+        double scale = intent.getDoubleExtra(EXTRA_SCALE, -1);
+        double zoom = intent.getDoubleExtra(EXTRA_ZOOM, -1);
+        double tilt = intent.getDoubleExtra(EXTRA_TILT, currentTilt);
+        double rotation = intent.getDoubleExtra(EXTRA_ROTATION, currentRotation);
+        double altitude = intent.getDoubleExtra(EXTRA_ALTITUDE, 0);
+        
+        // Convert zoom level to scale if provided
+        if (scale < 0 && zoom >= 0) {
+            // Approximate conversion: scale = 156543.03392 * cos(lat) / (2^zoom)
+            // Simplified for typical use
+            scale = 156543.03392 * Math.cos(Math.toRadians(latitude)) / Math.pow(2, zoom);
+        }
+        
+        // Use current scale if neither provided
+        if (scale < 0) {
+            scale = currentScale;
+        }
+        
+        // Normalize rotation to 0-360
+        rotation = ((rotation % 360) + 360) % 360;
+        
+        // Clamp tilt to valid range
+        tilt = Math.max(0, Math.min(90, tilt));
+        
+        Log.i(TAG, "NAVIGATE_TO_POSITION: lat=" + latitude + ", lon=" + longitude + 
+              ", scale=" + scale + ", tilt=" + tilt + ", rotation=" + rotation);
+        
+        GeoPoint point = new GeoPoint(latitude, longitude, altitude);
+        
+        try {
+            // Set rotation first
+            getMapView().getMapController().rotateTo(rotation, false);
+            
+            // Set tilt
+            getMapView().getMapController().tiltTo(tilt, false);
+            
+            // Pan to location
+            getMapView().getMapController().panTo(point, false);
+            
+            // Set scale/zoom
+            getMapView().getMapController().zoomTo(scale, false);
+            
+            Log.d(TAG, "Navigation complete");
+        } catch (Exception e) {
+            Log.e(TAG, "Navigation failed: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Show dialog to rename a view.
+     */
+    private void showRenameDialog(SavedView view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getMapView().getContext());
+        builder.setTitle(pluginContext.getString(R.string.rename_view));
+        
+        // Create input field
+        EditText input = new EditText(getMapView().getContext());
+        input.setText(view.getName());
+        input.setSelectAllOnFocus(true);
+        input.setTextColor(Color.WHITE);
+        input.setPadding(48, 32, 48, 32);
+        builder.setView(input);
+        
+        builder.setPositiveButton(pluginContext.getString(R.string.ok), (dialog, which) -> {
+            String newName = input.getText().toString().trim();
+            if (!newName.isEmpty()) {
+                viewsManager.renameView(view.getId(), newName);
+                refreshViewsList();
+                android.widget.Toast.makeText(pluginContext, 
+                    R.string.view_renamed, android.widget.Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        builder.setNegativeButton(pluginContext.getString(R.string.cancel), null);
+        builder.show();
+        
+        // Show keyboard
+        input.requestFocus();
+        input.postDelayed(() -> {
+            InputMethodManager imm = (InputMethodManager) pluginContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
+            }
+        }, 200);
+    }
+    
+    /**
+     * Show confirmation dialog before deleting a view.
+     */
+    private void showDeleteConfirmation(SavedView view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getMapView().getContext());
+        builder.setTitle(view.getName());
+        builder.setMessage(pluginContext.getString(R.string.delete_view_confirm));
+        
+        builder.setPositiveButton(pluginContext.getString(R.string.delete), (dialog, which) -> {
+            viewsManager.deleteView(view.getId());
+            refreshViewsList();
+            android.widget.Toast.makeText(pluginContext, 
+                R.string.view_deleted, android.widget.Toast.LENGTH_SHORT).show();
+        });
+        
+        builder.setNegativeButton(pluginContext.getString(R.string.cancel), null);
+        builder.show();
     }
 
     private void showCategorySelectionDialog() {
